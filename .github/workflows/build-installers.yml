@@ -39,8 +39,22 @@ jobs:
         shell: bash
         run: |
           VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version | tail -n1)"
+          BASE="${VERSION%%-*}"
+
+          if [[ "$BASE" =~ ^[0-9]+$ ]]; then
+            WIN_VERSION="${BASE}.0.0"
+          elif [[ "$BASE" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            WIN_VERSION="${BASE}.0"
+          elif [[ "$BASE" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            WIN_VERSION="$BASE"
+          else
+            WIN_VERSION="1.0.0"
+          fi
+
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "windows=$WIN_VERSION" >> "$GITHUB_OUTPUT"
           echo "Resolved version: $VERSION"
+          echo "Windows MSI version: $WIN_VERSION"
 
       - name: Create installer (Linux)
         if: runner.os == 'Linux'
@@ -68,7 +82,7 @@ jobs:
           jpackage `
             --type "${{ matrix.installer }}" `
             --name "AdAgency" `
-            --app-version "${{ steps.version.outputs.value }}" `
+            --app-version "${{ steps.version.outputs.windows }}" `
             --vendor "SAB" `
             --description "AdAgency Billboard Management System" `
             --input target `
