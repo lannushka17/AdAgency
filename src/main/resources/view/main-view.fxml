@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane styleClass="app-shell" xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.MainController">
+   <top>
+      <VBox spacing="2.0" styleClass="topbar">
+         <children>
+            <HBox alignment="CENTER_LEFT">
+               <children>
+                  <VBox spacing="4.0">
+                     <children>
+                        <Label styleClass="app-title" text="AdAgency" />
+                        <Label styleClass="app-subtitle"
+                               text="Інформаційна система управління рекламним агентством та орендою білбордів" />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <VBox alignment="CENTER_RIGHT" spacing="2.0">
+                     <children>
+                        <Label fx:id="currentUserLabel" styleClass="app-subtitle" text="Користувач: -" />
+                        <Label fx:id="currentRoleLabel" styleClass="app-subtitle" text="Роль: -" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+   <left>
+      <HBox fx:id="menuHost" styleClass="menu-host">
+         <children>
+            <Pane fx:id="indicatorLayer" prefWidth="4">
+               <children>
+                  <Region fx:id="menuIndicator" styleClass="menu-indicator" visible="false" />
+               </children>
+            </Pane>
+            <VBox fx:id="sidebar" styleClass="sidebar" HBox.hgrow="NEVER">
+               <children>
+                  <HBox styleClass="sidebar-header">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#toggleSidebar"
+                                styleClass="sidebar-toggle" text="≡" />
+                        <Label styleClass="sidebar-brand" text="Меню" />
+                     </children>
+                  </HBox>
+                  <Label styleClass="menu-section" text="ОСНОВНЕ" />
+                  <VBox styleClass="menu-box">
+                     <children>
+                        <ToggleButton fx:id="homeNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showHome" styleClass="sidebar-item" text="Головна">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="🏠" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="billboardNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showBillboards" styleClass="sidebar-item" text="Білборди">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="🏙" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="clientNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showClients" styleClass="sidebar-item" text="Клієнти">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="👥" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="contractNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showContracts" styleClass="sidebar-item" text="Договори">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="📄" />
+                           </graphic>
+                        </ToggleButton>
+                     </children>
+                  </VBox>
+                  <Label styleClass="menu-section" text="АДМІНІСТРУВАННЯ" />
+                  <VBox styleClass="menu-box">
+                     <children>
+                        <ToggleButton fx:id="usersNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showUsers" styleClass="sidebar-item" text="Користувачі">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="👤" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="reportsNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showReports" styleClass="sidebar-item" text="Звітність">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="📊" />
+                           </graphic>
+                        </ToggleButton>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </left>
+   <center>
+      <StackPane fx:id="contentArea" styleClass="content-area">
+         <children>
+            <ScrollPane fx:id="homeContent" fitToWidth="true" hbarPolicy="NEVER"
+                        styleClass="content-scroll" vbarPolicy="AS_NEEDED">
+               <content>
+                  <VBox styleClass="home-wrap">
+                     <children>
+                        <VBox styleClass="hero-card" spacing="12.0">
+                           <children>
+                              <Label styleClass="hero-title"
+                                     text="Рекламне агентство — від білбордів до договорів оренди"
+                                     wrapText="true" />
+                              <Label fx:id="welcomeLabel" styleClass="hero-text" wrapText="true" />
+                           </children>
+                        </VBox>
+                        <HBox alignment="CENTER" spacing="14.0">
+                           <children>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="metric-card">
+                                 <children>
+                                    <Label styleClass="metric-value" text="24/7" />
+                                    <Label styleClass="metric-title" text="Доступ до каталогу білбордів" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="metric-card">
+                                 <children>
+                                    <Label styleClass="metric-value" text="6" />
+                                    <Label styleClass="metric-title" text="Модулів керування" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="metric-card">
+                                 <children>
+                                    <Label styleClass="metric-value" text="1" />
+                                    <Label styleClass="metric-title" text="Локальна база adagency.db" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="14.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="feature-card">
+                                 <children>
+                                    <Label styleClass="feature-title" text="Білборди та міста" />
+                                    <Label styleClass="feature-text"
+                                           text="Каталог рекламних конструкцій, фільтрація за містом і контроль доступності для оренди."
+                                           wrapText="true" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="feature-card">
+                                 <children>
+                                    <Label styleClass="feature-title" text="Клієнти та договори" />
+                                    <Label styleClass="feature-text"
+                                           text="Облік рекламодавців, VIP-статус і договори оренди з перевіркою зайнятості дат."
+                                           wrapText="true" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="feature-card">
+                                 <children>
+                                    <Label styleClass="feature-title" text="Звітність і експорт" />
+                                    <Label styleClass="feature-text"
+                                           text="Аналітика за містами, дохід і борги по договорах, експорт у CSV для подальшої обробки."
+                                           wrapText="true" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </ScrollPane>
+         </children>
+      </StackPane>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER" styleClass="footer-bar">
+         <children>
+            <Label styleClass="footer-label"
+                   text="AdAgency · Система управління рекламним агентством © 2026" />
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

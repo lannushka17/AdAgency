@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="true" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.sab.adagency.Main" />
+    <module name="AdAgency" />
+    <option name="VM_PARAMETERS" value="--module-path &quot;$MAVEN_REPOSITORY$/org/openjfx/javafx-base/22.0.2/javafx-base-22.0.2-mac-aarch64.jar$PATH_SEPARATOR$$MAVEN_REPOSITORY$/org/openjfx/javafx-graphics/22.0.2/javafx-graphics-22.0.2-mac-aarch64.jar$PATH_SEPARATOR$$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/22.0.2/javafx-controls-22.0.2-mac-aarch64.jar$PATH_SEPARATOR$$MAVEN_REPOSITORY$/org/openjfx/javafx-fxml/22.0.2/javafx-fxml-22.0.2-mac-aarch64.jar&quot; --add-modules javafx.controls,javafx.fxml" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

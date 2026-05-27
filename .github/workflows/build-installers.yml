@@ -1,0 +1,104 @@
+name: Build Installers
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: ${{ matrix.os }} / ${{ matrix.installer }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            installer: deb
+          - os: windows-latest
+            installer: msi
+          - os: macos-13
+            installer: dmg
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build fat jar
+        shell: bash
+        run: mvn -B clean package -DskipTests
+
+      - name: Resolve project version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version | tail -n1)"
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
+
+      - name: Create installer (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p dist
+          jpackage \
+            --type "${{ matrix.installer }}" \
+            --name "AdAgency" \
+            --app-version "${{ steps.version.outputs.value }}" \
+            --vendor "SAB" \
+            --description "AdAgency Billboard Management System" \
+            --input target \
+            --main-jar "AdAgency-fat.jar" \
+            --main-class "com.sab.adagency.Launcher" \
+            --dest dist \
+            --linux-shortcut \
+            --linux-menu-group "Office"
+
+      - name: Create installer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          jpackage `
+            --type "${{ matrix.installer }}" `
+            --name "AdAgency" `
+            --app-version "${{ steps.version.outputs.value }}" `
+            --vendor "SAB" `
+            --description "AdAgency Billboard Management System" `
+            --input target `
+            --main-jar "AdAgency-fat.jar" `
+            --main-class "com.sab.adagency.Launcher" `
+            --dest dist `
+            --win-shortcut `
+            --win-menu `
+            --win-dir-chooser
+
+      - name: Create installer (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          mkdir -p dist
+          jpackage \
+            --type "${{ matrix.installer }}" \
+            --name "AdAgency" \
+            --app-version "${{ steps.version.outputs.value }}" \
+            --vendor "SAB" \
+            --description "AdAgency Billboard Management System" \
+            --input target \
+            --main-jar "AdAgency-fat.jar" \
+            --main-class "com.sab.adagency.Launcher" \
+            --dest dist \
+            --mac-package-name "AdAgency"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AdAgency-${{ matrix.os }}-${{ matrix.installer }}
+          path: dist/*
+          if-no-files-found: error

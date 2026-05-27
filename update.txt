@@ -1,0 +1,5097 @@
+Додаток 4. Лістинг програми
+
+pom.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.sab</groupId>
+  <artifactId>AdAgency</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>AdAgency</name>
+  <description>Система управління рекламним агентством та орендою білбордів</description>
+
+  <properties>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <lombok.version>1.18.38</lombok.version>
+    <javafx.version>22.0.2</javafx.version>
+    <javafx.platform>win</javafx.platform>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-base</artifactId>
+      <version>${javafx.version}</version>
+      <classifier>${javafx.platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-graphics</artifactId>
+      <version>${javafx.version}</version>
+      <classifier>${javafx.platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>${javafx.version}</version>
+      <classifier>${javafx.platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+      <version>${javafx.version}</version>
+      <classifier>${javafx.platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>5.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>3.46.1.0</version>
+    </dependency>
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>platform-windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <javafx.platform>win</javafx.platform>
+      </properties>
+    </profile>
+    <profile>
+      <id>platform-mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <javafx.platform>mac-aarch64</javafx.platform>
+      </properties>
+    </profile>
+    <profile>
+      <id>mac-intel</id>
+      <properties>
+        <javafx.platform>mac</javafx.platform>
+      </properties>
+    </profile>
+  </profiles>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <failOnError>false</failOnError>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>21</release>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.7.1</version>
+        <executions>
+          <execution>
+            <id>copy-javafx</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>org.openjfx</includeGroupIds>
+              <outputDirectory>${project.build.directory}/javafx-lib</outputDirectory>
+              <overWriteReleases>true</overWriteReleases>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>0.0.8</version>
+        <configuration>
+          <mainClass>com.sab.adagency.Main</mainClass>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.3</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <outputFile>${project.build.directory}/AdAgency-fat.jar</outputFile>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.sab.adagency.Launcher</mainClass>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+
+src/main/java/com/sab/adagency/Launcher.java
+package com.sab.adagency;
+
+/**
+ * Точка входу для Fat JAR ({@code java -jar}). Не успадковує Application —
+ * інакше JavaFX не завантажиться коректно через classpath.
+ */
+public final class Launcher {
+    public static void main(String[] args) {
+        Main.main(args);
+    }
+
+    private Launcher() {}
+}
+
+src/main/java/com/sab/adagency/Main.java
+package com.sab.adagency;
+
+import com.sab.adagency.controller.LoginController;
+import com.sab.adagency.controller.MainController;
+import com.sab.adagency.persistence.entity.AppUser;
+import com.sab.adagency.persistence.utility.PersistenceConfig;
+import java.io.IOException;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public class Main extends Application {
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage stage) throws IOException {
+        PersistenceConfig.initSchema();
+        showLoginScene(stage);
+    }
+
+    private void showLoginScene(Stage stage) throws IOException {
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/view/login-view.fxml"));
+        Parent root = loader.load();
+        LoginController controller = loader.getController();
+        controller.setLoginSuccessHandler(user -> openMainScene(stage, user));
+
+        Scene scene = new Scene(root, 660, 460);
+        scene.getStylesheets().add(Main.class.getResource("/style/app.css").toExternalForm());
+
+        stage.setTitle("AdAgency — Авторизація");
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.setOnCloseRequest(event -> Platform.exit());
+        stage.show();
+    }
+
+    private void openMainScene(Stage stage, AppUser user) {
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/view/main-view.fxml"));
+            Parent root = loader.load();
+            MainController controller = loader.getController();
+            controller.setAuthenticatedUser(user);
+
+            Scene scene = new Scene(root, 1240, 780);
+            scene.getStylesheets().add(Main.class.getResource("/style/app.css").toExternalForm());
+
+            stage.setTitle("AdAgency — управління рекламним агентством");
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(1000);
+            stage.setMinHeight(660);
+            stage.centerOnScreen();
+            stage.show();
+        } catch (IOException e) {
+            throw new RuntimeException("Не вдалося відкрити головне вікно", e);
+        }
+    }
+}
+
+src/main/java/com/sab/adagency/controller/BillboardController.java
+package com.sab.adagency.controller;
+
+import com.sab.adagency.persistence.contract.BillboardRepository;
+import com.sab.adagency.persistence.entity.Billboard;
+import com.sab.adagency.persistence.entity.BillboardSize;
+import com.sab.adagency.persistence.entity.City;
+import com.sab.adagency.persistence.implementation.BillboardRepositoryImpl;
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+/**
+ * Controller for Billboard CRUD operations.
+ */
+public class BillboardController implements Initializable {
+
+    @FXML
+    private TableView<Billboard> billboardTable;
+
+    @FXML
+    private TableColumn<Billboard, Integer> idColumn;
+
+    @FXML
+    private TableColumn<Billboard, String> codeColumn;
+
+    @FXML
+    private TableColumn<Billboard, String> addressColumn;
+
+    @FXML
+    private TableColumn<Billboard, String> cityColumn;
+
+    @FXML
+    private TableColumn<Billboard, String> sizeColumn;
+
+    @FXML
+    private TableColumn<Billboard, String> availableColumn;
+
+    @FXML
+    private TextField codeField;
+
+    @FXML
+    private TextField addressField;
+
+    @FXML
+    private ComboBox<City> cityComboBox;
+
+    @FXML
+    private ComboBox<BillboardSize> sizeComboBox;
+
+    @FXML
+    private CheckBox availableCheckBox;
+
+    @FXML
+    private ComboBox<String> cityFilterComboBox;
+
+    @FXML
+    private Button saveButton;
+
+    @FXML
+    private Button updateButton;
+
+    @FXML
+    private Button deleteButton;
+
+    @FXML
+    private Button clearButton;
+
+    private BillboardRepository billboardRepository;
+    private ObservableList<Billboard> billboardData;
+    private Billboard selectedBillboard;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        billboardRepository = new BillboardRepositoryImpl();
+        billboardData = FXCollections.observableArrayList();
+
+        setupTableColumns();
+        setupTableSelection();
+        setupButtons();
+        setupComboBoxes();
+        setupFilters();
+        loadBillboards();
+    }
+
+    private void setupTableColumns() {
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        codeColumn.setCellValueFactory(new PropertyValueFactory<>("code"));
+        addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
+
+        cityColumn.setCellValueFactory(cellData -> {
+            City c = cellData.getValue().getCity();
+            return new javafx.beans.property.SimpleStringProperty(c.getDisplayName());
+        });
+
+        sizeColumn.setCellValueFactory(cellData -> {
+            BillboardSize s = cellData.getValue().getSize();
+            return new javafx.beans.property.SimpleStringProperty(s.getDisplayName());
+        });
+
+        availableColumn.setCellValueFactory(cellData -> {
+            boolean a = cellData.getValue().isAvailable();
+            return new javafx.beans.property.SimpleStringProperty(a ? "✔ Вільний" : "✗ Зайнятий");
+        });
+
+        billboardTable.setItems(billboardData);
+    }
+
+    private void setupTableSelection() {
+        billboardTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            selectedBillboard = newValue;
+            if (selectedBillboard != null) {
+                populateFields(selectedBillboard);
+                updateButton.setDisable(false);
+                deleteButton.setDisable(false);
+            } else {
+                clearFields();
+                updateButton.setDisable(true);
+                deleteButton.setDisable(true);
+            }
+        });
+    }
+
+    private void setupButtons() {
+        updateButton.setDisable(true);
+        deleteButton.setDisable(true);
+    }
+
+    private void setupComboBoxes() {
+        cityComboBox.getItems().addAll(City.values());
+        sizeComboBox.getItems().addAll(BillboardSize.values());
+    }
+
+    private void setupFilters() {
+        ObservableList<String> filterOptions = FXCollections.observableArrayList();
+        filterOptions.add("Всі міста");
+        for (City city : City.values()) {
+            filterOptions.add(city.getDisplayName());
+        }
+        cityFilterComboBox.setItems(filterOptions);
+        cityFilterComboBox.setValue("Всі міста");
+        cityFilterComboBox.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+    }
+
+    private void applyFilters() {
+        try {
+            List<Billboard> all = billboardRepository.findAll();
+            ObservableList<Billboard> filtered = FXCollections.observableArrayList();
+
+            String cityFilter = cityFilterComboBox.getValue();
+            for (Billboard b : all) {
+                boolean matches = "Всі міста".equals(cityFilter)
+                        || b.getCity().getDisplayName().equals(cityFilter);
+                if (matches) {
+                    filtered.add(b);
+                }
+            }
+
+            billboardData.clear();
+            billboardData.addAll(filtered);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося застосувати фільтри: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void populateFields(Billboard billboard) {
+        codeField.setText(billboard.getCode());
+        addressField.setText(billboard.getAddress());
+        cityComboBox.setValue(billboard.getCity());
+        sizeComboBox.setValue(billboard.getSize());
+        availableCheckBox.setSelected(billboard.isAvailable());
+    }
+
+    private void clearFields() {
+        codeField.clear();
+        addressField.clear();
+        cityComboBox.setValue(null);
+        sizeComboBox.setValue(null);
+        availableCheckBox.setSelected(true);
+        selectedBillboard = null;
+    }
+
+    private void loadBillboards() {
+        try {
+            List<Billboard> billboards = billboardRepository.findAll();
+            billboardData.clear();
+            billboardData.addAll(billboards);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося завантажити білборди: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleSave() {
+        if (!validateInput()) {
+            return;
+        }
+
+        try {
+            Billboard billboard = Billboard.builder()
+                    .code(codeField.getText().trim())
+                    .address(addressField.getText().trim())
+                    .city(cityComboBox.getValue())
+                    .size(sizeComboBox.getValue())
+                    .available(availableCheckBox.isSelected())
+                    .build();
+
+            billboardRepository.save(billboard);
+            applyFilters();
+            clearFields();
+            showAlert("Успіх", "Білборд додано успішно!", Alert.AlertType.INFORMATION);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося зберегти білборд: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleUpdate() {
+        if (selectedBillboard == null || !validateInput()) {
+            return;
+        }
+
+        try {
+            Billboard updated = Billboard.builder()
+                    .id(selectedBillboard.getId())
+                    .code(codeField.getText().trim())
+                    .address(addressField.getText().trim())
+                    .city(cityComboBox.getValue())
+                    .size(sizeComboBox.getValue())
+                    .available(availableCheckBox.isSelected())
+                    .build();
+
+            billboardRepository.save(updated);
+            applyFilters();
+            clearFields();
+            showAlert("Успіх", "Білборд оновлено успішно!", Alert.AlertType.INFORMATION);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося оновити білборд: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleDelete() {
+        if (selectedBillboard == null) {
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Підтвердження видалення");
+        confirm.setHeaderText("Видалити білборд");
+        confirm.setContentText("Ви впевнені, що хочете видалити білборд '" + selectedBillboard.getCode() + "'?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                billboardRepository.deleteById(selectedBillboard.getId());
+                applyFilters();
+                clearFields();
+                showAlert("Успіх", "Білборд видалено успішно!", Alert.AlertType.INFORMATION);
+            } catch (Exception e) {
+                showAlert("Помилка", "Не вдалося видалити білборд: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    @FXML
+    private void handleClear() {
+        clearFields();
+        billboardTable.getSelectionModel().clearSelection();
+    }
+
+    @FXML
+    private void handleRefresh() {
+        applyFilters();
+    }
+
+    /**
+     * Public method to refresh data - called when tab is switched.
+     */
+    public void refreshData() {
+        loadBillboards();
+        billboardTable.getSelectionModel().clearSelection();
+        clearFields();
+    }
+
+    private boolean validateInput() {
+        if (codeField.getText().trim().isEmpty()) {
+            showAlert("Помилка валідації", "Код білборду обов'язковий!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (addressField.getText().trim().isEmpty()) {
+            showAlert("Помилка валідації", "Адреса обов'язкова!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (cityComboBox.getValue() == null) {
+            showAlert("Помилка валідації", "Місто обов'язкове!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (sizeComboBox.getValue() == null) {
+            showAlert("Помилка валідації", "Формат білборду обов'язковий!", Alert.AlertType.WARNING);
+            return false;
+        }
+        return true;
+    }
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}
+
+src/main/java/com/sab/adagency/controller/ClientController.java
+package com.sab.adagency.controller;
+
+import com.sab.adagency.persistence.contract.ClientRepository;
+import com.sab.adagency.persistence.entity.Client;
+import com.sab.adagency.persistence.implementation.ClientRepositoryImpl;
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+/**
+ * Controller for Client CRUD operations.
+ */
+public class ClientController implements Initializable {
+
+    @FXML
+    private TableView<Client> clientTable;
+
+    @FXML
+    private TableColumn<Client, Integer> idColumn;
+
+    @FXML
+    private TableColumn<Client, String> nameColumn;
+
+    @FXML
+    private TableColumn<Client, String> phoneColumn;
+
+    @FXML
+    private TableColumn<Client, String> emailColumn;
+
+    @FXML
+    private TableColumn<Client, String> vipColumn;
+
+    @FXML
+    private TextField nameField;
+
+    @FXML
+    private TextField phoneField;
+
+    @FXML
+    private TextField emailField;
+
+    @FXML
+    private CheckBox vipCheckBox;
+
+    @FXML
+    private TextField searchField;
+
+    @FXML
+    private ComboBox<String> vipFilterComboBox;
+
+    @FXML
+    private Button saveButton;
+
+    @FXML
+    private Button updateButton;
+
+    @FXML
+    private Button deleteButton;
+
+    @FXML
+    private Button clearButton;
+
+    private ClientRepository clientRepository;
+    private ObservableList<Client> clientData;
+    private Client selectedClient;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        clientRepository = new ClientRepositoryImpl();
+        clientData = FXCollections.observableArrayList();
+
+        setupTableColumns();
+        setupTableSelection();
+        setupButtons();
+        setupFilters();
+        loadClients();
+    }
+
+    private void setupTableColumns() {
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+
+        vipColumn.setCellValueFactory(cellData -> {
+            boolean isVip = cellData.getValue().isVip();
+            return new javafx.beans.property.SimpleStringProperty(isVip ? "★ VIP" : "—");
+        });
+
+        clientTable.setItems(clientData);
+    }
+
+    private void setupTableSelection() {
+        clientTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            selectedClient = newValue;
+            if (selectedClient != null) {
+                populateFields(selectedClient);
+                updateButton.setDisable(false);
+                deleteButton.setDisable(false);
+            } else {
+                clearFields();
+                updateButton.setDisable(true);
+                deleteButton.setDisable(true);
+            }
+        });
+    }
+
+    private void setupButtons() {
+        updateButton.setDisable(true);
+        deleteButton.setDisable(true);
+    }
+
+    private void setupFilters() {
+        ObservableList<String> vipFilterOptions = FXCollections.observableArrayList();
+        vipFilterOptions.addAll("Всі", "Тільки VIP", "Тільки звичайні");
+        vipFilterComboBox.setItems(vipFilterOptions);
+        vipFilterComboBox.setValue("Всі");
+
+        vipFilterComboBox.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+    }
+
+    private void applyFilters() {
+        try {
+            List<Client> all = clientRepository.findAll();
+            ObservableList<Client> filtered = FXCollections.observableArrayList();
+
+            String search = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase();
+            String vipFilter = vipFilterComboBox.getValue();
+
+            for (Client c : all) {
+                boolean matchesSearch = search.isEmpty()
+                        || c.getName().toLowerCase().contains(search)
+                        || (c.getPhone() != null && c.getPhone().toLowerCase().contains(search));
+                boolean matchesVip = "Всі".equals(vipFilter)
+                        || ("Тільки VIP".equals(vipFilter) && c.isVip())
+                        || ("Тільки звичайні".equals(vipFilter) && !c.isVip());
+
+                if (matchesSearch && matchesVip) {
+                    filtered.add(c);
+                }
+            }
+
+            clientData.clear();
+            clientData.addAll(filtered);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося застосувати фільтри: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void populateFields(Client client) {
+        nameField.setText(client.getName());
+        phoneField.setText(client.getPhone());
+        emailField.setText(client.getEmail());
+        vipCheckBox.setSelected(client.isVip());
+    }
+
+    private void clearFields() {
+        nameField.clear();
+        phoneField.clear();
+        emailField.clear();
+        vipCheckBox.setSelected(false);
+        selectedClient = null;
+    }
+
+    private void loadClients() {
+        try {
+            List<Client> clients = clientRepository.findAll();
+            clientData.clear();
+            clientData.addAll(clients);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося завантажити клієнтів: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleSave() {
+        if (!validateInput()) {
+            return;
+        }
+
+        try {
+            Client client = Client.builder()
+                    .name(nameField.getText().trim())
+                    .phone(phoneField.getText().trim())
+                    .email(emailField.getText().trim())
+                    .vip(vipCheckBox.isSelected())
+                    .build();
+
+            clientRepository.save(client);
+            applyFilters();
+            clearFields();
+            showAlert("Успіх", "Клієнта додано успішно!", Alert.AlertType.INFORMATION);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося зберегти клієнта: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleUpdate() {
+        if (selectedClient == null || !validateInput()) {
+            return;
+        }
+
+        try {
+            Client updated = Client.builder()
+                    .id(selectedClient.getId())
+                    .name(nameField.getText().trim())
+                    .phone(phoneField.getText().trim())
+                    .email(emailField.getText().trim())
+                    .vip(vipCheckBox.isSelected())
+                    .build();
+
+            clientRepository.save(updated);
+            applyFilters();
+            clearFields();
+            showAlert("Успіх", "Клієнта оновлено успішно!", Alert.AlertType.INFORMATION);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося оновити клієнта: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleDelete() {
+        if (selectedClient == null) {
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Підтвердження видалення");
+        confirm.setHeaderText("Видалити клієнта");
+        confirm.setContentText("Ви впевнені, що хочете видалити клієнта '" + selectedClient.getName() + "'?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                clientRepository.deleteById(selectedClient.getId());
+                applyFilters();
+                clearFields();
+                showAlert("Успіх", "Клієнта видалено успішно!", Alert.AlertType.INFORMATION);
+            } catch (Exception e) {
+                showAlert("Помилка", "Не вдалося видалити клієнта: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    @FXML
+    private void handleClear() {
+        clearFields();
+        clientTable.getSelectionModel().clearSelection();
+    }
+
+    @FXML
+    private void handleRefresh() {
+        applyFilters();
+    }
+
+    /**
+     * Public method to refresh data - called when tab is switched.
+     */
+    public void refreshData() {
+        loadClients();
+        clientTable.getSelectionModel().clearSelection();
+        clearFields();
+    }
+
+    private boolean validateInput() {
+        if (nameField.getText().trim().isEmpty()) {
+            showAlert("Помилка валідації", "Ім'я клієнта обов'язкове!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (phoneField.getText().trim().isEmpty()) {
+            showAlert("Помилка валідації", "Телефон обов'язковий!", Alert.AlertType.WARNING);
+            return false;
+        }
+        return true;
+    }
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}
+
+src/main/java/com/sab/adagency/controller/LoginController.java
+package com.sab.adagency.controller;
+
+import com.sab.adagency.persistence.contract.AppUserRepository;
+import com.sab.adagency.persistence.entity.AppUser;
+import com.sab.adagency.persistence.implementation.AppUserRepositoryImpl;
+import com.sab.adagency.persistence.utility.PasswordUtil;
+import java.net.URL;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.function.Consumer;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+
+/** Контролер екрану авторизації. */
+public class LoginController implements Initializable {
+
+    @FXML
+    private TextField usernameField;
+
+    @FXML
+    private PasswordField passwordField;
+
+    private AppUserRepository userRepository;
+    private Consumer<AppUser> loginSuccessHandler;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        userRepository = new AppUserRepositoryImpl();
+    }
+
+    public void setLoginSuccessHandler(Consumer<AppUser> handler) {
+        this.loginSuccessHandler = handler;
+    }
+
+    @FXML
+    private void handleLogin() {
+        String username = usernameField.getText() == null ? "" : usernameField.getText().trim();
+        String password = passwordField.getText() == null ? "" : passwordField.getText();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            alert(Alert.AlertType.WARNING, "Введіть логін і пароль.");
+            return;
+        }
+
+        Optional<AppUser> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty() || !PasswordUtil.matches(password, userOpt.get().getPasswordHash())) {
+            alert(Alert.AlertType.ERROR, "Невірний логін або пароль.");
+            return;
+        }
+
+        if (loginSuccessHandler != null) {
+            loginSuccessHandler.accept(userOpt.get());
+        }
+    }
+
+    private void alert(Alert.AlertType type, String message) {
+        Alert a = new Alert(type);
+        a.setHeaderText(null);
+        a.setContentText(message);
+        a.showAndWait();
+    }
+}
+
+src/main/java/com/sab/adagency/controller/MainController.java
+package com.sab.adagency.controller;
+
+import com.sab.adagency.persistence.entity.AppUser;
+import com.sab.adagency.persistence.entity.UserRole;
+import java.io.IOException;
+import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+
+/** Головне вікно з анімованим вертикальним меню та плавним перемиканням розділів. */
+public class MainController implements Initializable {
+
+    private static final double SIDEBAR_EXPANDED = 240.0;
+    private static final double SIDEBAR_COLLAPSED = 76.0;
+    private static final Duration SIDEBAR_DURATION = Duration.millis(260);
+    private static final Duration INDICATOR_DURATION = Duration.millis(220);
+    private static final Duration FADE_DURATION = Duration.millis(180);
+
+    @FXML
+    private VBox sidebar;
+
+    @FXML
+    private Pane indicatorLayer;
+
+    @FXML
+    private Region menuIndicator;
+
+    @FXML
+    private StackPane contentArea;
+
+    @FXML
+    private ScrollPane homeContent;
+
+    @FXML
+    private Label welcomeLabel;
+
+    @FXML
+    private Label currentUserLabel;
+
+    @FXML
+    private Label currentRoleLabel;
+
+    @FXML
+    private ToggleButton homeNav;
+
+    @FXML
+    private ToggleButton billboardNav;
+
+    @FXML
+    private ToggleButton clientNav;
+
+    @FXML
+    private ToggleButton contractNav;
+
+    @FXML
+    private ToggleButton usersNav;
+
+    @FXML
+    private ToggleButton reportsNav;
+
+    private final ToggleGroup navGroup = new ToggleGroup();
+    private final Map<ToggleButton, Node> sections = new LinkedHashMap<>();
+    private Node currentSection;
+    private boolean collapsed = false;
+
+    private AppUser authenticatedUser;
+
+    private BillboardController billboardController;
+    private ClientController clientController;
+    private RentalContractController contractController;
+    private UserManagementController userManagementController;
+    private ReportController reportController;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        setupWelcomeText();
+        loadSections();
+        bindNavToggles();
+        applyRolePermissions(UserRole.MANAGER);
+        setupIndicator();
+        selectInitial();
+    }
+
+    public void setAuthenticatedUser(AppUser user) {
+        this.authenticatedUser = user;
+        if (user != null) {
+            currentUserLabel.setText("Користувач: "
+                    + (user.getFullName() == null || user.getFullName().isBlank()
+                            ? user.getUsername()
+                            : user.getFullName() + " (" + user.getUsername() + ")"));
+            applyRolePermissions(user.getRole());
+            setupWelcomeText();
+            if (userManagementController != null) {
+                userManagementController.setCurrentUser(user);
+            }
+        }
+    }
+
+    private void loadSections() {
+        try {
+            FXMLLoader bb = new FXMLLoader(getClass().getResource("/view/billboard-management.fxml"));
+            Parent billboardRoot = bb.load();
+            billboardController = bb.getController();
+
+            FXMLLoader cl = new FXMLLoader(getClass().getResource("/view/client-management.fxml"));
+            Parent clientRoot = cl.load();
+            clientController = cl.getController();
+
+            FXMLLoader ct = new FXMLLoader(getClass().getResource("/view/rental-contract-management.fxml"));
+            Parent contractRoot = ct.load();
+            contractController = ct.getController();
+
+            FXMLLoader u = new FXMLLoader(getClass().getResource("/view/user-management.fxml"));
+            Parent usersRoot = u.load();
+            userManagementController = u.getController();
+            if (authenticatedUser != null) {
+                userManagementController.setCurrentUser(authenticatedUser);
+            }
+
+            FXMLLoader rep = new FXMLLoader(getClass().getResource("/view/report-management.fxml"));
+            Parent reportRoot = rep.load();
+            reportController = rep.getController();
+
+            sections.put(homeNav, homeContent);
+            sections.put(billboardNav, billboardRoot);
+            sections.put(clientNav, clientRoot);
+            sections.put(contractNav, contractRoot);
+            sections.put(usersNav, usersRoot);
+            sections.put(reportsNav, reportRoot);
+
+            for (Node node : sections.values()) {
+                if (node != homeContent) {
+                    contentArea.getChildren().add(node);
+                }
+                node.setVisible(false);
+                node.setOpacity(0.0);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            alert("Не вдалося завантажити інтерфейси: " + e.getMessage());
+        }
+    }
+
+    private void bindNavToggles() {
+        for (ToggleButton tb : sections.keySet()) {
+            tb.setToggleGroup(navGroup);
+        }
+        navGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+            if (newT == null && oldT != null) {
+                oldT.setSelected(true);
+            }
+        });
+    }
+
+    private void setupIndicator() {
+        menuIndicator.setManaged(false);
+        sidebar.heightProperty().addListener((obs, o, n) -> repositionIndicator());
+    }
+
+    private void selectInitial() {
+        homeNav.setSelected(true);
+        showSectionFor(homeNav, false);
+        Platform.runLater(this::repositionIndicator);
+    }
+
+    private void applyRolePermissions(UserRole role) {
+        boolean isAdmin = role == UserRole.ADMIN;
+        boolean isManager = role == UserRole.MANAGER || isAdmin;
+
+        setNavEnabled(homeNav, true);
+        setNavEnabled(billboardNav, isManager);
+        setNavEnabled(clientNav, true);
+        setNavEnabled(contractNav, true);
+        setNavEnabled(reportsNav, true);
+        setNavEnabled(usersNav, isAdmin);
+
+        currentRoleLabel.setText("Роль: " + role.getDisplayName());
+
+        ToggleButton selected = (ToggleButton) navGroup.getSelectedToggle();
+        if (selected != null && selected.isDisabled()) {
+            homeNav.setSelected(true);
+            showSectionFor(homeNav, true);
+        }
+    }
+
+    private void setNavEnabled(ToggleButton tb, boolean enabled) {
+        tb.setDisable(!enabled);
+    }
+
+    private void setupWelcomeText() {
+        String name = authenticatedUser == null
+                ? "невідомий користувач"
+                : authenticatedUser.getUsername() + " ("
+                        + authenticatedUser.getRole().getDisplayName() + ")";
+        welcomeLabel.setText("Ласкаво просимо до AdAgency — системи управління рекламним агентством.\n\n"
+                + "Скористайтеся бічним меню ліворуч, щоб перейти до потрібного розділу.\n"
+                + "Натисніть ≡ нагорі, щоб згорнути меню до іконок.\n\nУвійшли як: "
+                + name);
+    }
+
+    @FXML
+    private void showHome() {
+        showSectionFor(homeNav, true);
+    }
+
+    @FXML
+    private void showBillboards() {
+        showSectionFor(billboardNav, true);
+        if (billboardController != null) {
+            billboardController.refreshData();
+        }
+    }
+
+    @FXML
+    private void showClients() {
+        showSectionFor(clientNav, true);
+        if (clientController != null) {
+            clientController.refreshData();
+        }
+    }
+
+    @FXML
+    private void showContracts() {
+        showSectionFor(contractNav, true);
+        if (contractController != null) {
+            contractController.refreshData();
+        }
+    }
+
+    @FXML
+    private void showUsers() {
+        showSectionFor(usersNav, true);
+        if (userManagementController != null) {
+            userManagementController.refreshData();
+        }
+    }
+
+    @FXML
+    private void showReports() {
+        showSectionFor(reportsNav, true);
+        if (reportController != null) {
+            reportController.refreshData();
+        }
+    }
+
+    private void showSectionFor(ToggleButton button, boolean animate) {
+        Node target = sections.get(button);
+        if (target == null) {
+            return;
+        }
+        button.setSelected(true);
+        Platform.runLater(this::repositionIndicator);
+
+        if (target == currentSection) {
+            return;
+        }
+
+        Node previous = currentSection;
+        currentSection = target;
+
+        if (!animate || previous == null) {
+            if (previous != null) {
+                previous.setVisible(false);
+                previous.setOpacity(0.0);
+            }
+            target.setVisible(true);
+            target.setOpacity(1.0);
+            target.setTranslateX(0);
+            return;
+        }
+
+        FadeTransition out = new FadeTransition(FADE_DURATION, previous);
+        out.setFromValue(previous.getOpacity());
+        out.setToValue(0.0);
+        out.setOnFinished(e -> previous.setVisible(false));
+
+        target.setVisible(true);
+        target.setOpacity(0.0);
+        target.setTranslateX(12);
+        FadeTransition in = new FadeTransition(FADE_DURATION, target);
+        in.setFromValue(0.0);
+        in.setToValue(1.0);
+
+        TranslateTransition slide = new TranslateTransition(FADE_DURATION, target);
+        slide.setFromX(12);
+        slide.setToX(0);
+        slide.setInterpolator(Interpolator.EASE_OUT);
+
+        out.play();
+        in.play();
+        slide.play();
+    }
+
+    private void repositionIndicator() {
+        ToggleButton selected = (ToggleButton) navGroup.getSelectedToggle();
+        if (selected == null) {
+            menuIndicator.setVisible(false);
+            return;
+        }
+        menuIndicator.setVisible(true);
+        double targetY = computeIndicatorY(selected);
+        menuIndicator.setPrefHeight(Math.max(selected.getHeight() - 8, 30));
+
+        Timeline tl = new Timeline(new KeyFrame(
+                INDICATOR_DURATION,
+                new KeyValue(menuIndicator.layoutYProperty(), targetY, Interpolator.EASE_BOTH)));
+        tl.play();
+    }
+
+    private double computeIndicatorY(ToggleButton button) {
+        double y = button.getBoundsInParent().getMinY();
+        Node parent = button.getParent();
+        while (parent != null && parent != sidebar) {
+            y += parent.getBoundsInParent().getMinY();
+            parent = parent.getParent();
+        }
+        return y + 4;
+    }
+
+    @FXML
+    private void toggleSidebar() {
+        double to;
+        if (collapsed) {
+            to = SIDEBAR_EXPANDED;
+            sidebar.getStyleClass().remove("collapsed");
+        } else {
+            to = SIDEBAR_COLLAPSED;
+            if (!sidebar.getStyleClass().contains("collapsed")) {
+                sidebar.getStyleClass().add("collapsed");
+            }
+        }
+        collapsed = !collapsed;
+
+        Timeline tl = new Timeline(
+                new KeyFrame(SIDEBAR_DURATION,
+                        new KeyValue(sidebar.prefWidthProperty(), to, Interpolator.EASE_BOTH),
+                        new KeyValue(sidebar.minWidthProperty(), to, Interpolator.EASE_BOTH),
+                        new KeyValue(sidebar.maxWidthProperty(), to, Interpolator.EASE_BOTH)));
+        tl.setOnFinished(e -> Platform.runLater(this::repositionIndicator));
+        tl.play();
+    }
+
+    private void alert(String msg) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Помилка");
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
+    }
+}
+
+src/main/java/com/sab/adagency/controller/RentalContractController.java
+package com.sab.adagency.controller;
+
+import com.sab.adagency.persistence.contract.BillboardRepository;
+import com.sab.adagency.persistence.contract.ClientRepository;
+import com.sab.adagency.persistence.contract.RentalContractRepository;
+import com.sab.adagency.persistence.entity.Billboard;
+import com.sab.adagency.persistence.entity.Client;
+import com.sab.adagency.persistence.entity.RentalContract;
+import com.sab.adagency.persistence.implementation.BillboardRepositoryImpl;
+import com.sab.adagency.persistence.implementation.ClientRepositoryImpl;
+import com.sab.adagency.persistence.implementation.RentalContractRepositoryImpl;
+import java.net.URL;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+/**
+ * Controller for RentalContract CRUD operations.
+ *
+ * Uses an in-memory date Dictionary (Map<LocalDate, Integer>) to quickly check
+ * whether a particular date is already occupied by an existing contract for the
+ * currently selected billboard.
+ */
+public class RentalContractController implements Initializable {
+
+    @FXML
+    private TableView<RentalContract> contractTable;
+
+    @FXML
+    private TableColumn<RentalContract, Integer> idColumn;
+
+    @FXML
+    private TableColumn<RentalContract, String> billboardColumn;
+
+    @FXML
+    private TableColumn<RentalContract, String> clientColumn;
+
+    @FXML
+    private TableColumn<RentalContract, String> startDateColumn;
+
+    @FXML
+    private TableColumn<RentalContract, String> endDateColumn;
+
+    @FXML
+    private TableColumn<RentalContract, Long> daysColumn;
+
+    @FXML
+    private TableColumn<RentalContract, Double> totalColumn;
+
+    @FXML
+    private TableColumn<RentalContract, String> paidColumn;
+
+    @FXML
+    private ComboBox<Billboard> billboardComboBox;
+
+    @FXML
+    private ComboBox<Client> clientComboBox;
+
+    @FXML
+    private DatePicker startDatePicker;
+
+    @FXML
+    private DatePicker endDatePicker;
+
+    @FXML
+    private CheckBox paidCheckBox;
+
+    @FXML
+    private Label totalAmountLabel;
+
+    @FXML
+    private Label availabilityLabel;
+
+    @FXML
+    private ComboBox<Billboard> billboardFilterComboBox;
+
+    @FXML
+    private ComboBox<String> paidFilterComboBox;
+
+    @FXML
+    private Button checkAvailabilityButton;
+
+    @FXML
+    private Button saveButton;
+
+    @FXML
+    private Button updateButton;
+
+    @FXML
+    private Button deleteButton;
+
+    @FXML
+    private Button clearButton;
+
+    private RentalContractRepository contractRepository;
+    private BillboardRepository billboardRepository;
+    private ClientRepository clientRepository;
+
+    private ObservableList<RentalContract> contractData;
+    private ObservableList<Billboard> billboardData;
+    private ObservableList<Client> clientData;
+
+    private RentalContract selectedContract;
+
+    /**
+     * Dictionary that maps an occupied date -> contract id occupying that date,
+     * built for the currently selected billboard. Used for fast O(1) availability
+     * lookups while the user picks a date range.
+     */
+    private final Map<LocalDate, Integer> occupancyDictionary = new HashMap<>();
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        contractRepository = new RentalContractRepositoryImpl();
+        billboardRepository = new BillboardRepositoryImpl();
+        clientRepository = new ClientRepositoryImpl();
+
+        contractData = FXCollections.observableArrayList();
+        billboardData = FXCollections.observableArrayList();
+        clientData = FXCollections.observableArrayList();
+
+        setupTableColumns();
+        setupTableSelection();
+        setupButtons();
+        setupComboBoxes();
+        setupFilters();
+        setupListeners();
+        loadReferenceData();
+        loadContracts();
+    }
+
+    private void setupTableColumns() {
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+
+        billboardColumn.setCellValueFactory(cellData -> {
+            int billboardId = cellData.getValue().getBillboardId();
+            String text = billboardRepository.findOneById(billboardId)
+                    .map(b -> b.getCode() + " (" + b.getCity().getDisplayName() + ")")
+                    .orElse("Невідомий");
+            return new javafx.beans.property.SimpleStringProperty(text);
+        });
+
+        clientColumn.setCellValueFactory(cellData -> {
+            int clientId = cellData.getValue().getClientId();
+            String text = clientRepository.findOneById(clientId)
+                    .map(Client::getName)
+                    .orElse("Невідомий");
+            return new javafx.beans.property.SimpleStringProperty(text);
+        });
+
+        startDateColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStartDate().toString()));
+        endDateColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEndDate().toString()));
+
+        daysColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getDurationDays()));
+
+        totalColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
+
+        paidColumn.setCellValueFactory(cellData -> {
+            boolean paid = cellData.getValue().isPaid();
+            return new javafx.beans.property.SimpleStringProperty(paid ? "✔ Оплачено" : "✗ Неоплачено");
+        });
+
+        contractTable.setItems(contractData);
+    }
+
+    private void setupTableSelection() {
+        contractTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            selectedContract = newValue;
+            if (selectedContract != null) {
+                populateFields(selectedContract);
+                updateButton.setDisable(false);
+                deleteButton.setDisable(false);
+            } else {
+                clearFields();
+                updateButton.setDisable(true);
+                deleteButton.setDisable(true);
+            }
+        });
+    }
+
+    private void setupButtons() {
+        updateButton.setDisable(true);
+        deleteButton.setDisable(true);
+    }
+
+    private void setupComboBoxes() {
+        billboardComboBox.setItems(billboardData);
+        billboardComboBox.setCellFactory(listView -> new ListCell<Billboard>() {
+            @Override
+            protected void updateItem(Billboard item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null
+                        : item.getCode() + " — " + item.getAddress() + " (" + item.getCity().getDisplayName() + ")");
+            }
+        });
+        billboardComboBox.setButtonCell(new ListCell<Billboard>() {
+            @Override
+            protected void updateItem(Billboard item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getCode() + " (" + item.getCity().getDisplayName() + ")");
+            }
+        });
+
+        clientComboBox.setItems(clientData);
+        clientComboBox.setCellFactory(listView -> new ListCell<Client>() {
+            @Override
+            protected void updateItem(Client item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : (item.isVip() ? "★ " : "") + item.getName());
+            }
+        });
+        clientComboBox.setButtonCell(new ListCell<Client>() {
+            @Override
+            protected void updateItem(Client item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getName());
+            }
+        });
+    }
+
+    private void setupFilters() {
+        billboardFilterComboBox.setItems(billboardData);
+        billboardFilterComboBox.setCellFactory(listView -> new ListCell<Billboard>() {
+            @Override
+            protected void updateItem(Billboard item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getCode());
+            }
+        });
+        billboardFilterComboBox.setButtonCell(new ListCell<Billboard>() {
+            @Override
+            protected void updateItem(Billboard item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getCode());
+            }
+        });
+
+        ObservableList<String> paidOptions = FXCollections.observableArrayList("Всі", "Оплачені", "Неоплачені");
+        paidFilterComboBox.setItems(paidOptions);
+        paidFilterComboBox.setValue("Всі");
+
+        billboardFilterComboBox.valueProperty().addListener((obs, o, n) -> applyFilters());
+        paidFilterComboBox.valueProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    private void setupListeners() {
+        billboardComboBox.valueProperty().addListener((obs, oldB, newB) -> {
+            rebuildOccupancyDictionary(newB);
+            updateAvailabilityLabel();
+            updateTotalAmount();
+        });
+
+        startDatePicker.valueProperty().addListener((obs, o, n) -> {
+            updateAvailabilityLabel();
+            updateTotalAmount();
+        });
+        endDatePicker.valueProperty().addListener((obs, o, n) -> {
+            updateAvailabilityLabel();
+            updateTotalAmount();
+        });
+
+        clientComboBox.valueProperty().addListener((obs, o, n) -> updateTotalAmount());
+    }
+
+    /**
+     * Rebuilds the in-memory dictionary of occupied dates for the supplied billboard.
+     * Each occupied date is mapped to the id of the contract that occupies it.
+     */
+    private void rebuildOccupancyDictionary(Billboard billboard) {
+        occupancyDictionary.clear();
+        if (billboard == null) {
+            return;
+        }
+        List<RentalContract> existing = contractRepository.findByBillboardId(billboard.getId());
+        for (RentalContract c : existing) {
+            if (selectedContract != null && c.getId() == selectedContract.getId()) {
+                continue;
+            }
+            LocalDate d = c.getStartDate();
+            while (!d.isAfter(c.getEndDate())) {
+                occupancyDictionary.put(d, c.getId());
+                d = d.plusDays(1);
+            }
+        }
+    }
+
+    /**
+     * Updates the availability hint label using the in-memory dictionary.
+     */
+    private void updateAvailabilityLabel() {
+        Billboard billboard = billboardComboBox.getValue();
+        LocalDate start = startDatePicker.getValue();
+        LocalDate end = endDatePicker.getValue();
+
+        if (billboard == null || start == null || end == null) {
+            availabilityLabel.setText("—");
+            availabilityLabel.setStyle("-fx-text-fill: #777;");
+            return;
+        }
+
+        if (end.isBefore(start)) {
+            availabilityLabel.setText("Дата завершення раніше дати початку!");
+            availabilityLabel.setStyle("-fx-text-fill: #f44336; -fx-font-weight: bold;");
+            return;
+        }
+
+        int conflicts = 0;
+        LocalDate firstConflict = null;
+        LocalDate d = start;
+        while (!d.isAfter(end)) {
+            if (occupancyDictionary.containsKey(d)) {
+                conflicts++;
+                if (firstConflict == null) {
+                    firstConflict = d;
+                }
+            }
+            d = d.plusDays(1);
+        }
+
+        if (conflicts == 0) {
+            availabilityLabel.setText("✔ Білборд вільний на обраний період");
+            availabilityLabel.setStyle("-fx-text-fill: #2E7D32; -fx-font-weight: bold;");
+        } else {
+            availabilityLabel.setText(String.format("✗ Зайнято %d дн. (перша колізія: %s)", conflicts, firstConflict));
+            availabilityLabel.setStyle("-fx-text-fill: #f44336; -fx-font-weight: bold;");
+        }
+    }
+
+    private void updateTotalAmount() {
+        Billboard billboard = billboardComboBox.getValue();
+        LocalDate start = startDatePicker.getValue();
+        LocalDate end = endDatePicker.getValue();
+        Client client = clientComboBox.getValue();
+
+        if (billboard == null || start == null || end == null || end.isBefore(start)) {
+            totalAmountLabel.setText("0.00 грн");
+            return;
+        }
+
+        long days = java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1;
+        double total = days * billboard.getSize().getDailyPrice();
+        if (client != null && client.isVip()) {
+            total *= 0.9;
+        }
+        totalAmountLabel.setText(String.format("%.2f грн (%d дн.)", total, days));
+    }
+
+    private void applyFilters() {
+        try {
+            List<RentalContract> all = contractRepository.findAll();
+            ObservableList<RentalContract> filtered = FXCollections.observableArrayList();
+
+            Billboard billboardFilter = billboardFilterComboBox.getValue();
+            String paidFilter = paidFilterComboBox.getValue();
+
+            for (RentalContract c : all) {
+                boolean matchesBillboard = billboardFilter == null || c.getBillboardId() == billboardFilter.getId();
+                boolean matchesPaid = "Всі".equals(paidFilter)
+                        || ("Оплачені".equals(paidFilter) && c.isPaid())
+                        || ("Неоплачені".equals(paidFilter) && !c.isPaid());
+
+                if (matchesBillboard && matchesPaid) {
+                    filtered.add(c);
+                }
+            }
+
+            contractData.clear();
+            contractData.addAll(filtered);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося застосувати фільтри: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void populateFields(RentalContract contract) {
+        billboardRepository.findOneById(contract.getBillboardId())
+                .ifPresent(billboardComboBox::setValue);
+        clientRepository.findOneById(contract.getClientId())
+                .ifPresent(clientComboBox::setValue);
+        startDatePicker.setValue(contract.getStartDate());
+        endDatePicker.setValue(contract.getEndDate());
+        paidCheckBox.setSelected(contract.isPaid());
+        rebuildOccupancyDictionary(billboardComboBox.getValue());
+        updateAvailabilityLabel();
+        updateTotalAmount();
+    }
+
+    private void clearFields() {
+        billboardComboBox.setValue(null);
+        clientComboBox.setValue(null);
+        startDatePicker.setValue(null);
+        endDatePicker.setValue(null);
+        paidCheckBox.setSelected(false);
+        totalAmountLabel.setText("0.00 грн");
+        availabilityLabel.setText("—");
+        availabilityLabel.setStyle("-fx-text-fill: #777;");
+        selectedContract = null;
+        occupancyDictionary.clear();
+    }
+
+    private void loadReferenceData() {
+        try {
+            billboardData.clear();
+            billboardData.addAll(billboardRepository.findAll());
+            clientData.clear();
+            clientData.addAll(clientRepository.findAll());
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося завантажити довідники: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void loadContracts() {
+        try {
+            List<RentalContract> contracts = contractRepository.findAll();
+            contractData.clear();
+            contractData.addAll(contracts);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося завантажити договори: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleCheckAvailability() {
+        Billboard billboard = billboardComboBox.getValue();
+        LocalDate start = startDatePicker.getValue();
+        LocalDate end = endDatePicker.getValue();
+
+        if (billboard == null || start == null || end == null) {
+            showAlert("Перевірка зайнятості", "Виберіть білборд і дати!", Alert.AlertType.WARNING);
+            return;
+        }
+
+        rebuildOccupancyDictionary(billboard);
+        updateAvailabilityLabel();
+
+        StringBuilder report = new StringBuilder();
+        report.append("Білборд: ").append(billboard.getCode()).append("\n");
+        report.append("Період: ").append(start).append(" — ").append(end).append("\n\n");
+
+        int free = 0;
+        int busy = 0;
+        LocalDate d = start;
+        while (!d.isAfter(end)) {
+            if (occupancyDictionary.containsKey(d)) {
+                busy++;
+            } else {
+                free++;
+            }
+            d = d.plusDays(1);
+        }
+        report.append("Вільних днів: ").append(free).append("\n");
+        report.append("Зайнятих днів: ").append(busy);
+
+        Alert.AlertType type = busy == 0 ? Alert.AlertType.INFORMATION : Alert.AlertType.WARNING;
+        showAlert("Перевірка зайнятості дат", report.toString(), type);
+    }
+
+    @FXML
+    private void handleSave() {
+        if (!validateInput()) {
+            return;
+        }
+
+        try {
+            Billboard billboard = billboardComboBox.getValue();
+            Client client = clientComboBox.getValue();
+            LocalDate start = startDatePicker.getValue();
+            LocalDate end = endDatePicker.getValue();
+
+            if (contractRepository.existsOverlap(billboard.getId(), start, end, 0)) {
+                showAlert("Конфлікт дат",
+                        "Білборд вже зайнятий на обраний період! Скористайтеся перевіркою зайнятості.",
+                        Alert.AlertType.WARNING);
+                return;
+            }
+
+            long days = java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1;
+            double total = days * billboard.getSize().getDailyPrice();
+            if (client.isVip()) {
+                total *= 0.9;
+            }
+
+            RentalContract contract = RentalContract.builder()
+                    .billboardId(billboard.getId())
+                    .clientId(client.getId())
+                    .startDate(start)
+                    .endDate(end)
+                    .totalPrice(total)
+                    .paid(paidCheckBox.isSelected())
+                    .build();
+
+            contractRepository.save(contract);
+            applyFilters();
+            clearFields();
+            showAlert("Успіх", "Договір оренди створено успішно!", Alert.AlertType.INFORMATION);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося створити договір: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleUpdate() {
+        if (selectedContract == null || !validateInput()) {
+            return;
+        }
+
+        try {
+            Billboard billboard = billboardComboBox.getValue();
+            Client client = clientComboBox.getValue();
+            LocalDate start = startDatePicker.getValue();
+            LocalDate end = endDatePicker.getValue();
+
+            if (contractRepository.existsOverlap(billboard.getId(), start, end, selectedContract.getId())) {
+                showAlert("Конфлікт дат",
+                        "Білборд вже зайнятий іншим договором на обраний період!",
+                        Alert.AlertType.WARNING);
+                return;
+            }
+
+            long days = java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1;
+            double total = days * billboard.getSize().getDailyPrice();
+            if (client.isVip()) {
+                total *= 0.9;
+            }
+
+            RentalContract updated = RentalContract.builder()
+                    .id(selectedContract.getId())
+                    .billboardId(billboard.getId())
+                    .clientId(client.getId())
+                    .startDate(start)
+                    .endDate(end)
+                    .totalPrice(total)
+                    .paid(paidCheckBox.isSelected())
+                    .build();
+
+            contractRepository.save(updated);
+            applyFilters();
+            clearFields();
+            showAlert("Успіх", "Договір оновлено успішно!", Alert.AlertType.INFORMATION);
+        } catch (Exception e) {
+            showAlert("Помилка", "Не вдалося оновити договір: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleDelete() {
+        if (selectedContract == null) {
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Підтвердження видалення");
+        confirm.setHeaderText("Розірвати договір");
+        confirm.setContentText("Ви впевнені, що хочете видалити договір #" + selectedContract.getId() + "?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                contractRepository.deleteById(selectedContract.getId());
+                applyFilters();
+                clearFields();
+                showAlert("Успіх", "Договір видалено успішно!", Alert.AlertType.INFORMATION);
+            } catch (Exception e) {
+                showAlert("Помилка", "Не вдалося видалити договір: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    @FXML
+    private void handleClear() {
+        clearFields();
+        contractTable.getSelectionModel().clearSelection();
+    }
+
+    @FXML
+    private void handleRefresh() {
+        loadReferenceData();
+        applyFilters();
+    }
+
+    /**
+     * Public method to refresh data - called when tab is switched.
+     */
+    public void refreshData() {
+        loadReferenceData();
+        loadContracts();
+        contractTable.getSelectionModel().clearSelection();
+        clearFields();
+    }
+
+    private boolean validateInput() {
+        if (billboardComboBox.getValue() == null) {
+            showAlert("Помилка валідації", "Білборд обов'язковий!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (clientComboBox.getValue() == null) {
+            showAlert("Помилка валідації", "Клієнт обов'язковий!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (startDatePicker.getValue() == null) {
+            showAlert("Помилка валідації", "Дата початку обов'язкова!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (endDatePicker.getValue() == null) {
+            showAlert("Помилка валідації", "Дата завершення обов'язкова!", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (endDatePicker.getValue().isBefore(startDatePicker.getValue())) {
+            showAlert("Помилка валідації", "Дата завершення не може бути раніше дати початку!", Alert.AlertType.WARNING);
+            return false;
+        }
+        return true;
+    }
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}
+
+src/main/java/com/sab/adagency/controller/ReportController.java
+package com.sab.adagency.controller;
+
+import com.sab.adagency.persistence.contract.BillboardRepository;
+import com.sab.adagency.persistence.contract.ClientRepository;
+import com.sab.adagency.persistence.contract.RentalContractRepository;
+import com.sab.adagency.persistence.entity.Billboard;
+import com.sab.adagency.persistence.entity.Client;
+import com.sab.adagency.persistence.entity.RentalContract;
+import com.sab.adagency.persistence.implementation.BillboardRepositoryImpl;
+import com.sab.adagency.persistence.implementation.ClientRepositoryImpl;
+import com.sab.adagency.persistence.implementation.RentalContractRepositoryImpl;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
+
+/** Контролер модуля звітності з фільтром за періодом та експортом у CSV. */
+public class ReportController implements Initializable {
+
+    private static final String REPORT_BILLBOARDS = "Білборди за містами";
+    private static final String REPORT_REVENUE = "Дохід і борг по договорах";
+    private static final String REPORT_VIP = "VIP-клієнти та активність";
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    @FXML
+    private ComboBox<String> reportTypeCombo;
+
+    @FXML
+    private DatePicker startDatePicker;
+
+    @FXML
+    private DatePicker endDatePicker;
+
+    @FXML
+    private Button exportButton;
+
+    @FXML
+    private TableView<ObservableList<String>> reportTable;
+
+    @FXML
+    private Label summaryLabel;
+
+    private final BillboardRepository billboards = new BillboardRepositoryImpl();
+    private final ClientRepository clients = new ClientRepositoryImpl();
+    private final RentalContractRepository contracts = new RentalContractRepositoryImpl();
+
+    private final List<String> currentHeaders = new ArrayList<>();
+    private final ObservableList<ObservableList<String>> currentRows = FXCollections.observableArrayList();
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        reportTypeCombo.getItems().setAll(REPORT_BILLBOARDS, REPORT_REVENUE, REPORT_VIP);
+        reportTypeCombo.setValue(REPORT_BILLBOARDS);
+
+        LocalDate today = LocalDate.now();
+        endDatePicker.setValue(today.plusMonths(3));
+        startDatePicker.setValue(today.minusMonths(1));
+
+        reportTable.setItems(currentRows);
+        exportButton.setDisable(true);
+    }
+
+    public void refreshData() {
+        handleGenerate();
+    }
+
+    @FXML
+    private void handleGenerate() {
+        if (!validateRange()) {
+            return;
+        }
+        LocalDate from = startDatePicker.getValue();
+        LocalDate to = endDatePicker.getValue();
+        String type = reportTypeCombo.getValue();
+        switch (type) {
+            case REPORT_BILLBOARDS -> billboardsByCityReport();
+            case REPORT_REVENUE -> contractRevenueReport(from, to);
+            case REPORT_VIP -> vipClientsReport(from, to);
+            default -> {
+            }
+        }
+        exportButton.setDisable(currentRows.isEmpty());
+    }
+
+    @FXML
+    private void handleExportCsv() {
+        if (currentRows.isEmpty()) {
+            alert(Alert.AlertType.WARNING, "Спочатку сформуйте звіт.");
+            return;
+        }
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Зберегти звіт у CSV");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"));
+        chooser.setInitialFileName(defaultFileName());
+        Window owner = reportTable.getScene() != null ? reportTable.getScene().getWindow() : null;
+        File target = chooser.showSaveDialog(owner);
+        if (target == null) {
+            return;
+        }
+        try (PrintWriter pw = new PrintWriter(target, StandardCharsets.UTF_8)) {
+            pw.write('\ufeff');
+            pw.println(joinCsv(currentHeaders));
+            for (ObservableList<String> row : currentRows) {
+                pw.println(joinCsv(row));
+            }
+            alert(Alert.AlertType.INFORMATION, "CSV збережено: " + target.getAbsolutePath());
+        } catch (IOException ex) {
+            alert(Alert.AlertType.ERROR, "Не вдалося зберегти файл: " + ex.getMessage());
+        }
+    }
+
+    private void billboardsByCityReport() {
+        Map<String, Integer> totalByCity = new HashMap<>();
+        Map<String, Integer> availableByCity = new HashMap<>();
+        Map<String, Integer> rentedByCity = new HashMap<>();
+
+        Set<Integer> rentedBillboardIds = new HashSet<>();
+        LocalDate today = LocalDate.now();
+        for (RentalContract c : contracts.findAll()) {
+            if (!c.getEndDate().isBefore(today) && !c.getStartDate().isAfter(today.plusMonths(6))) {
+                rentedBillboardIds.add(c.getBillboardId());
+            }
+        }
+
+        for (Billboard b : billboards.findAll()) {
+            String city = b.getCity() == null ? "—" : b.getCity().getDisplayName();
+            totalByCity.merge(city, 1, Integer::sum);
+            if (b.isAvailable() && !rentedBillboardIds.contains(b.getId())) {
+                availableByCity.merge(city, 1, Integer::sum);
+            } else {
+                rentedByCity.merge(city, 1, Integer::sum);
+            }
+        }
+
+        List<List<String>> result = new ArrayList<>();
+        List<String> keys = new ArrayList<>(totalByCity.keySet());
+        keys.sort(Comparator.naturalOrder());
+        int totalAll = 0;
+        int availAll = 0;
+        for (String city : keys) {
+            int total = totalByCity.getOrDefault(city, 0);
+            int avail = availableByCity.getOrDefault(city, 0);
+            int rented = rentedByCity.getOrDefault(city, 0);
+            double load = total == 0 ? 0 : rented * 100.0 / total;
+            result.add(List.of(
+                    city,
+                    String.valueOf(total),
+                    String.valueOf(avail),
+                    String.valueOf(rented),
+                    String.format("%.1f%%", load)));
+            totalAll += total;
+            availAll += avail;
+        }
+
+        setReportData(
+                List.of("Місто", "Усього білбордів", "Вільних", "Зайнятих", "Завантаженість"),
+                result);
+        summaryLabel.setText(String.format("Усього білбордів: %d · Вільних: %d", totalAll, availAll));
+    }
+
+    private void contractRevenueReport(LocalDate from, LocalDate to) {
+        Map<Integer, Billboard> billboardMap = new HashMap<>();
+        for (Billboard b : billboards.findAll()) {
+            billboardMap.put(b.getId(), b);
+        }
+        Map<Integer, Client> clientMap = new HashMap<>();
+        for (Client c : clients.findAll()) {
+            clientMap.put(c.getId(), c);
+        }
+
+        List<List<String>> result = new ArrayList<>();
+        double grandTotal = 0;
+        double grandPaid = 0;
+        for (RentalContract c : contracts.findAll()) {
+            if (c.getEndDate().isBefore(from) || c.getStartDate().isAfter(to)) {
+                continue;
+            }
+            Billboard b = billboardMap.get(c.getBillboardId());
+            Client cl = clientMap.get(c.getClientId());
+            String bbCode = b == null ? "—" : b.getCode();
+            String clientName = cl == null ? "—" : cl.getName();
+            grandTotal += c.getTotalPrice();
+            if (c.isPaid()) {
+                grandPaid += c.getTotalPrice();
+            }
+            double debt = c.isPaid() ? 0 : c.getTotalPrice();
+            result.add(List.of(
+                    bbCode,
+                    clientName,
+                    c.getStartDate().format(DATE_FMT),
+                    c.getEndDate().format(DATE_FMT),
+                    String.format("%.2f грн", c.getTotalPrice()),
+                    c.isPaid() ? "Оплачено" : "Борг",
+                    String.format("%.2f грн", debt)));
+        }
+        result.sort(Comparator.comparing(r -> r.get(0)));
+
+        setReportData(
+                List.of("Білборд", "Клієнт", "Початок", "Кінець", "Сума", "Статус", "Борг"),
+                result);
+        summaryLabel.setText(String.format(
+                "Договорів: %d · Усього: %.2f грн · Оплачено: %.2f грн · Борг: %.2f грн",
+                result.size(), grandTotal, grandPaid, grandTotal - grandPaid));
+    }
+
+    private void vipClientsReport(LocalDate from, LocalDate to) {
+        Map<Integer, List<RentalContract>> byClient = new HashMap<>();
+        for (RentalContract c : contracts.findAll()) {
+            if (c.getEndDate().isBefore(from) || c.getStartDate().isAfter(to)) {
+                continue;
+            }
+            byClient.computeIfAbsent(c.getClientId(), k -> new ArrayList<>()).add(c);
+        }
+
+        List<List<String>> result = new ArrayList<>();
+        int vipCount = 0;
+        int activeVip = 0;
+        for (Client c : clients.findAll()) {
+            List<RentalContract> list = byClient.getOrDefault(c.getId(), List.of());
+            double sum = list.stream().mapToDouble(RentalContract::getTotalPrice).sum();
+            long unpaid = list.stream().filter(ct -> !ct.isPaid()).count();
+            String risk = detectRisk(c, unpaid, list.size());
+            if (c.isVip()) {
+                vipCount++;
+                if (!list.isEmpty()) {
+                    activeVip++;
+                }
+            }
+            if (!c.isVip() && list.isEmpty()) {
+                continue;
+            }
+            result.add(List.of(
+                    c.getName(),
+                    c.isVip() ? "VIP" : "Звичайний",
+                    c.getPhone(),
+                    String.valueOf(list.size()),
+                    String.format("%.2f грн", sum),
+                    String.valueOf(unpaid),
+                    risk));
+        }
+        result.sort(Comparator.comparing(r -> r.get(0)));
+
+        setReportData(
+                List.of("Клієнт", "Статус", "Телефон", "Договорів", "Сума", "Несплачених", "Ризик"),
+                result);
+        summaryLabel.setText(String.format(
+                "У вибірці: %d клієнтів · VIP: %d · Активних VIP: %d", result.size(), vipCount, activeVip));
+    }
+
+    private String detectRisk(Client c, long unpaid, int contractCount) {
+        if (unpaid > 0) {
+            return "Високий (є борг)";
+        }
+        if (c.isVip() && contractCount == 0) {
+            return "Середній (VIP без договорів)";
+        }
+        if (contractCount == 0) {
+            return "Низький";
+        }
+        return "Низький";
+    }
+
+    private void setReportData(List<String> headers, List<List<String>> rows) {
+        currentHeaders.clear();
+        currentHeaders.addAll(headers);
+        reportTable.getColumns().clear();
+        for (int i = 0; i < headers.size(); i++) {
+            final int columnIndex = i;
+            TableColumn<ObservableList<String>, String> col = new TableColumn<>(headers.get(i));
+            col.setCellValueFactory(cell -> {
+                ObservableList<String> values = cell.getValue();
+                return new ReadOnlyStringWrapper(columnIndex < values.size() ? values.get(columnIndex) : "");
+            });
+            col.setSortable(false);
+            reportTable.getColumns().add(col);
+        }
+        currentRows.clear();
+        for (List<String> row : rows) {
+            currentRows.add(FXCollections.observableArrayList(row));
+        }
+    }
+
+    private boolean validateRange() {
+        if (REPORT_BILLBOARDS.equals(reportTypeCombo.getValue())) {
+            return true;
+        }
+        if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
+            alert(Alert.AlertType.WARNING, "Оберіть період.");
+            return false;
+        }
+        if (startDatePicker.getValue().isAfter(endDatePicker.getValue())) {
+            alert(Alert.AlertType.WARNING, "Дата початку має бути не пізніше дати кінця.");
+            return false;
+        }
+        return true;
+    }
+
+    private String defaultFileName() {
+        String type = reportTypeCombo.getValue() == null ? "report" : reportTypeCombo.getValue();
+        String sanitized = type.toLowerCase().replace(' ', '-').replaceAll("[^a-z0-9а-яіїєґ\\-]", "");
+        if (startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
+            return String.format("%s_%s_%s.csv", sanitized, startDatePicker.getValue(), endDatePicker.getValue());
+        }
+        return sanitized + ".csv";
+    }
+
+    private String joinCsv(List<String> values) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < values.size(); i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(escapeCsv(values.get(i)));
+        }
+        return sb.toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        boolean needsQuotes = value.contains(",") || value.contains("\"") || value.contains("\n");
+        String escaped = value.replace("\"", "\"\"");
+        return needsQuotes ? "\"" + escaped + "\"" : escaped;
+    }
+
+    private void alert(Alert.AlertType type, String message) {
+        Alert a = new Alert(type);
+        a.setHeaderText(null);
+        a.setContentText(message);
+        a.showAndWait();
+    }
+}
+
+src/main/java/com/sab/adagency/controller/UserManagementController.java
+package com.sab.adagency.controller;
+
+import com.sab.adagency.persistence.contract.AppUserRepository;
+import com.sab.adagency.persistence.entity.AppUser;
+import com.sab.adagency.persistence.entity.UserRole;
+import com.sab.adagency.persistence.implementation.AppUserRepositoryImpl;
+import com.sab.adagency.persistence.utility.PasswordUtil;
+import java.net.URL;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+/** Управління користувачами системи. */
+public class UserManagementController implements Initializable {
+
+    @FXML
+    private TableView<AppUser> userTable;
+
+    @FXML
+    private TableColumn<AppUser, Integer> idColumn;
+
+    @FXML
+    private TableColumn<AppUser, String> usernameColumn;
+
+    @FXML
+    private TableColumn<AppUser, String> fullNameColumn;
+
+    @FXML
+    private TableColumn<AppUser, String> roleColumn;
+
+    @FXML
+    private TextField usernameField;
+
+    @FXML
+    private TextField fullNameField;
+
+    @FXML
+    private PasswordField passwordField;
+
+    @FXML
+    private ComboBox<UserRole> roleComboBox;
+
+    @FXML
+    private Button updateButton;
+
+    @FXML
+    private Button deleteButton;
+
+    private final AppUserRepository userRepository = new AppUserRepositoryImpl();
+    private final ObservableList<AppUser> data = FXCollections.observableArrayList();
+
+    private AppUser selected;
+    private AppUser currentUser;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        fullNameColumn.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        roleColumn.setCellValueFactory(cell -> new SimpleStringProperty(
+                cell.getValue().getRole().getDisplayName()));
+
+        roleComboBox.getItems().setAll(UserRole.values());
+        userTable.setItems(data);
+
+        userTable.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+            selected = n;
+            if (n == null) {
+                clearFields();
+                updateButton.setDisable(true);
+                deleteButton.setDisable(true);
+            } else {
+                usernameField.setText(n.getUsername());
+                fullNameField.setText(n.getFullName() == null ? "" : n.getFullName());
+                passwordField.clear();
+                roleComboBox.setValue(n.getRole());
+                updateButton.setDisable(false);
+                deleteButton.setDisable(false);
+            }
+        });
+
+        updateButton.setDisable(true);
+        deleteButton.setDisable(true);
+        loadUsers();
+    }
+
+    public void setCurrentUser(AppUser currentUser) {
+        this.currentUser = currentUser;
+    }
+
+    public void refreshData() {
+        loadUsers();
+    }
+
+    private void loadUsers() {
+        try {
+            data.setAll(userRepository.findAll());
+        } catch (Exception ex) {
+            alert(Alert.AlertType.ERROR, "Не вдалося завантажити користувачів: " + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleSave() {
+        if (!validate(true)) {
+            return;
+        }
+        String username = usernameField.getText().trim();
+        Optional<AppUser> existing = userRepository.findByUsername(username);
+        if (existing.isPresent()) {
+            alert(Alert.AlertType.WARNING, "Користувач з таким логіном вже існує.");
+            return;
+        }
+        AppUser user = AppUser.builder()
+                .username(username)
+                .fullName(fullNameField.getText() == null ? "" : fullNameField.getText().trim())
+                .passwordHash(PasswordUtil.sha256(passwordField.getText()))
+                .role(roleComboBox.getValue())
+                .build();
+        userRepository.save(user);
+        loadUsers();
+        clearFields();
+        alert(Alert.AlertType.INFORMATION, "Користувача створено.");
+    }
+
+    @FXML
+    private void handleUpdate() {
+        if (selected == null || !validate(false)) {
+            return;
+        }
+        String username = usernameField.getText().trim();
+        Optional<AppUser> existing = userRepository.findByUsername(username);
+        if (existing.isPresent() && existing.get().getId() != selected.getId()) {
+            alert(Alert.AlertType.WARNING, "Користувач з таким логіном вже існує.");
+            return;
+        }
+        String passwordHash = selected.getPasswordHash();
+        if (passwordField.getText() != null && !passwordField.getText().isBlank()) {
+            passwordHash = PasswordUtil.sha256(passwordField.getText());
+        }
+        AppUser updated = AppUser.builder()
+                .id(selected.getId())
+                .username(username)
+                .fullName(fullNameField.getText() == null ? "" : fullNameField.getText().trim())
+                .passwordHash(passwordHash)
+                .role(roleComboBox.getValue())
+                .build();
+        userRepository.save(updated);
+        loadUsers();
+        clearFields();
+        alert(Alert.AlertType.INFORMATION, "Дані користувача оновлено.");
+    }
+
+    @FXML
+    private void handleDelete() {
+        if (selected == null) {
+            return;
+        }
+        if (currentUser != null && currentUser.getId() == selected.getId()) {
+            alert(Alert.AlertType.WARNING, "Не можна видалити власний обліковий запис.");
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Підтвердження видалення");
+        confirm.setHeaderText("Видалити користувача");
+        confirm.setContentText("Видалити користувача '" + selected.getUsername() + "'?");
+        Optional<ButtonType> r = confirm.showAndWait();
+        if (r.isPresent() && r.get() == ButtonType.OK) {
+            userRepository.deleteById(selected.getId());
+            loadUsers();
+            clearFields();
+            alert(Alert.AlertType.INFORMATION, "Користувача видалено.");
+        }
+    }
+
+    @FXML
+    private void handleClear() {
+        userTable.getSelectionModel().clearSelection();
+        clearFields();
+    }
+
+    @FXML
+    private void handleRefresh() {
+        loadUsers();
+    }
+
+    private boolean validate(boolean createMode) {
+        if (usernameField.getText() == null || usernameField.getText().trim().isEmpty()) {
+            alert(Alert.AlertType.WARNING, "Логін обов'язковий.");
+            return false;
+        }
+        if (createMode && (passwordField.getText() == null || passwordField.getText().isBlank())) {
+            alert(Alert.AlertType.WARNING, "Пароль обов'язковий для нового користувача.");
+            return false;
+        }
+        if (roleComboBox.getValue() == null) {
+            alert(Alert.AlertType.WARNING, "Роль обов'язкова.");
+            return false;
+        }
+        return true;
+    }
+
+    private void clearFields() {
+        usernameField.clear();
+        fullNameField.clear();
+        passwordField.clear();
+        roleComboBox.setValue(null);
+        selected = null;
+    }
+
+    private void alert(Alert.AlertType type, String message) {
+        Alert a = new Alert(type);
+        a.setHeaderText(null);
+        a.setContentText(message);
+        a.showAndWait();
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/contract/AppUserRepository.java
+package com.sab.adagency.persistence.contract;
+
+import com.sab.adagency.persistence.entity.AppUser;
+import java.util.List;
+import java.util.Optional;
+
+public interface AppUserRepository {
+    Optional<AppUser> findById(int id);
+
+    Optional<AppUser> findByUsername(String username);
+
+    List<AppUser> findAll();
+
+    AppUser save(AppUser user);
+
+    boolean deleteById(int id);
+}
+
+src/main/java/com/sab/adagency/persistence/contract/BillboardRepository.java
+package com.sab.adagency.persistence.contract;
+
+import com.sab.adagency.persistence.entity.Billboard;
+import com.sab.adagency.persistence.entity.City;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Repository for working with billboards.
+ */
+public interface BillboardRepository {
+    /**
+     * Finds a billboard by id.
+     * @param id unique billboard identifier
+     * @return Optional with Billboard if found, otherwise empty
+     */
+    Optional<Billboard> findOneById(int id);
+
+    /**
+     * Retrieves all billboards.
+     * @return list of all billboards
+     */
+    List<Billboard> findAll();
+
+    /**
+     * Creates or updates a billboard.
+     * @param billboard entity to persist
+     * @return persisted entity (with id)
+     */
+    Billboard save(Billboard billboard);
+
+    /**
+     * Deletes a billboard by id.
+     * @param id unique billboard identifier
+     * @return true if a row was deleted
+     */
+    boolean deleteById(int id);
+
+    /**
+     * Finds billboards located in a particular city.
+     * @param city city to filter by
+     * @return list of billboards in the city
+     */
+    List<Billboard> findByCity(City city);
+
+    /**
+     * Finds billboards by availability flag.
+     * @param available availability flag
+     * @return list of billboards with specified availability
+     */
+    List<Billboard> findByAvailable(boolean available);
+
+    /**
+     * Finds billboards whose code or address contains the search query.
+     * @param query partial search string
+     * @return list of matching billboards
+     */
+    List<Billboard> searchByCodeOrAddress(String query);
+}
+
+src/main/java/com/sab/adagency/persistence/contract/ClientRepository.java
+package com.sab.adagency.persistence.contract;
+
+import com.sab.adagency.persistence.entity.Client;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Repository for working with clients.
+ */
+public interface ClientRepository {
+    /**
+     * Finds a client by id.
+     * @param id unique client identifier
+     * @return Optional with Client if found, otherwise empty
+     */
+    Optional<Client> findOneById(int id);
+
+    /**
+     * Retrieves all clients.
+     * @return list of all clients
+     */
+    List<Client> findAll();
+
+    /**
+     * Creates or updates a client.
+     * @param client entity to persist
+     * @return persisted entity (with id)
+     */
+    Client save(Client client);
+
+    /**
+     * Deletes a client by id.
+     * @param id unique client identifier
+     * @return true if a row was deleted
+     */
+    boolean deleteById(int id);
+
+    /**
+     * Finds clients by partial name match (case-insensitive).
+     * @param name name or part of name
+     * @return list of clients matching the name
+     */
+    List<Client> findByNameContaining(String name);
+
+    /**
+     * Finds clients by VIP status.
+     * @param vip whether the clients are VIP
+     * @return list of clients with specified VIP status
+     */
+    List<Client> findByVip(boolean vip);
+}
+
+src/main/java/com/sab/adagency/persistence/contract/RentalContractRepository.java
+package com.sab.adagency.persistence.contract;
+
+import com.sab.adagency.persistence.entity.RentalContract;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Repository for working with billboard rental contracts.
+ */
+public interface RentalContractRepository {
+    /**
+     * Finds a contract by id.
+     * @param id unique contract identifier
+     * @return Optional with RentalContract if found, otherwise empty
+     */
+    Optional<RentalContract> findOneById(int id);
+
+    /**
+     * Retrieves all contracts.
+     * @return list of all contracts
+     */
+    List<RentalContract> findAll();
+
+    /**
+     * Creates or updates a contract.
+     * @param rentalContract entity to persist
+     * @return persisted entity (with id)
+     */
+    RentalContract save(RentalContract rentalContract);
+
+    /**
+     * Deletes a contract by id.
+     * @param id unique contract identifier
+     * @return true if a row was deleted
+     */
+    boolean deleteById(int id);
+
+    /**
+     * Finds all contracts associated with a specific billboard.
+     * @param billboardId billboard identifier
+     * @return list of contracts for the billboard
+     */
+    List<RentalContract> findByBillboardId(int billboardId);
+
+    /**
+     * Finds all contracts of a specific client.
+     * @param clientId client identifier
+     * @return list of contracts for the client
+     */
+    List<RentalContract> findByClientId(int clientId);
+
+    /**
+     * Finds all contracts whose date range overlaps the supplied [start, end] interval.
+     * @param billboardId billboard identifier
+     * @param startDate start of interval
+     * @param endDate end of interval
+     * @param excludeId contract id to exclude (for update operations); use 0 to include all
+     * @return list of overlapping contracts
+     */
+    List<RentalContract> findOverlapping(int billboardId, LocalDate startDate, LocalDate endDate, int excludeId);
+
+    /**
+     * Returns true if there is at least one contract for the billboard whose date range
+     * intersects with the given range (excluding the contract with the supplied id).
+     * @param billboardId billboard identifier
+     * @param startDate start of interval
+     * @param endDate end of interval
+     * @param excludeId contract id to exclude (use 0 for none)
+     * @return true if an overlap exists
+     */
+    boolean existsOverlap(int billboardId, LocalDate startDate, LocalDate endDate, int excludeId);
+
+    /**
+     * Calculates total revenue for paid contracts.
+     * @return total revenue amount
+     */
+    double calculatePaidRevenue();
+}
+
+src/main/java/com/sab/adagency/persistence/entity/AppUser.java
+package com.sab.adagency.persistence.entity;
+
+import lombok.Builder;
+import lombok.Data;
+
+/** Користувач інформаційної системи AdAgency. */
+@Data
+@Builder(toBuilder = true)
+public class AppUser {
+    int id;
+    String username;
+    String passwordHash;
+    UserRole role;
+    String fullName;
+}
+
+src/main/java/com/sab/adagency/persistence/entity/Billboard.java
+package com.sab.adagency.persistence.entity;
+
+import lombok.Builder;
+import lombok.Data;
+
+/**
+ * Billboard entity representing a single advertising structure in a city.
+ */
+@Data
+@Builder(toBuilder = true)
+public class Billboard {
+    /**
+     * Unique billboard identifier
+     */
+    int id;
+
+    /**
+     * Internal billboard code, e.g. "KY-001"
+     */
+    String code;
+
+    /**
+     * Street address where the billboard is located
+     */
+    String address;
+
+    /**
+     * City where the billboard is placed
+     */
+    City city;
+
+    /**
+     * Format / size of the billboard
+     */
+    BillboardSize size;
+
+    /**
+     * Whether the billboard is currently available for rent
+     */
+    @Builder.Default
+    boolean available = true;
+
+    /**
+     * Returns formatted text description.
+     * @return formatted billboard description
+     */
+    @Override
+    public String toString() {
+        return String.format("[%s] %s, %s — %s",
+                code, address, city.getDisplayName(), size.getDisplayName());
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/entity/BillboardSize.java
+package com.sab.adagency.persistence.entity;
+
+/**
+ * Enumeration of billboard sizes/formats with daily rental rates.
+ */
+public enum BillboardSize {
+    SMALL("Малий 3x6 м", 250.0),
+    MEDIUM("Середній 6x12 м", 600.0),
+    LARGE("Великий 8x16 м", 1100.0),
+    DIGITAL("Цифровий екран", 1800.0),
+    CITYLIGHT("Сітілайт 1.2x1.8 м", 180.0);
+
+    private final String displayName;
+    private final double dailyPrice;
+
+    BillboardSize(String displayName, double dailyPrice) {
+        this.displayName = displayName;
+        this.dailyPrice = dailyPrice;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public double getDailyPrice() {
+        return dailyPrice;
+    }
+
+    /**
+     * Converts string to BillboardSize enum value.
+     * @param option string representation
+     * @return corresponding BillboardSize
+     */
+    public static BillboardSize fromString(String option) {
+        for (BillboardSize size : BillboardSize.values()) {
+            if (size.name().equalsIgnoreCase(option) || size.displayName.equals(option)) {
+                return size;
+            }
+        }
+        throw new IllegalArgumentException("Unknown billboard size: " + option);
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/entity/City.java
+package com.sab.adagency.persistence.entity;
+
+/**
+ * Enumeration of cities where billboards are placed.
+ */
+public enum City {
+    KYIV("Київ"),
+    LVIV("Львів"),
+    ODESA("Одеса"),
+    KHARKIV("Харків"),
+    DNIPRO("Дніпро"),
+    VINNYTSIA("Вінниця");
+
+    private final String displayName;
+
+    City(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    /**
+     * Converts string to City enum value.
+     * @param option string representation
+     * @return corresponding City
+     */
+    public static City fromString(String option) {
+        for (City city : City.values()) {
+            if (city.name().equalsIgnoreCase(option) || city.displayName.equals(option)) {
+                return city;
+            }
+        }
+        throw new IllegalArgumentException("Unknown city: " + option);
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/entity/Client.java
+package com.sab.adagency.persistence.entity;
+
+import lombok.Builder;
+import lombok.Data;
+
+/**
+ * Client (advertiser) entity for the advertising agency.
+ */
+@Data
+@Builder(toBuilder = true)
+public class Client {
+    /**
+     * Unique client identifier
+     */
+    int id;
+
+    /**
+     * Company or person name
+     */
+    String name;
+
+    /**
+     * Contact phone number
+     */
+    String phone;
+
+    /**
+     * Contact e-mail address
+     */
+    String email;
+
+    /**
+     * Whether the client has VIP status (gets discount)
+     */
+    @Builder.Default
+    boolean vip = false;
+
+    /**
+     * Returns formatted string representation.
+     * @return formatted client description
+     */
+    @Override
+    public String toString() {
+        return String.format("%s%s (%s)", vip ? "★ " : "", name, phone);
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/entity/RentalContract.java
+package com.sab.adagency.persistence.entity;
+
+import java.time.LocalDate;
+import lombok.Builder;
+import lombok.Data;
+
+/**
+ * Rental contract entity that links a client to a billboard for a specific date range.
+ */
+@Data
+@Builder(toBuilder = true)
+public class RentalContract {
+    /**
+     * Unique contract identifier
+     */
+    int id;
+
+    /**
+     * Billboard reference
+     */
+    int billboardId;
+
+    /**
+     * Client reference
+     */
+    int clientId;
+
+    /**
+     * Rental start date (inclusive)
+     */
+    LocalDate startDate;
+
+    /**
+     * Rental end date (inclusive)
+     */
+    LocalDate endDate;
+
+    /**
+     * Total contract amount
+     */
+    double totalPrice;
+
+    /**
+     * Whether the contract is fully paid
+     */
+    @Builder.Default
+    boolean paid = false;
+
+    /**
+     * Returns the rental duration in days (inclusive).
+     * @return number of rented days
+     */
+    public long getDurationDays() {
+        return java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+    }
+
+    /**
+     * Returns formatted text description of the contract.
+     * @return formatted contract description
+     */
+    @Override
+    public String toString() {
+        return String.format("Договір #%d: %s - %s (%.2f грн) [%s]",
+                id, startDate, endDate, totalPrice, paid ? "Оплачено" : "Не оплачено");
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/entity/UserRole.java
+package com.sab.adagency.persistence.entity;
+
+/** Ролі користувачів у системі AdAgency. */
+public enum UserRole {
+    ADMIN("Адміністратор"),
+    MANAGER("Менеджер з продажу"),
+    SALES("Менеджер з клієнтів");
+
+    private final String displayName;
+
+    UserRole(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/implementation/AppUserRepositoryImpl.java
+package com.sab.adagency.persistence.implementation;
+
+import com.sab.adagency.persistence.contract.AppUserRepository;
+import com.sab.adagency.persistence.entity.AppUser;
+import com.sab.adagency.persistence.entity.UserRole;
+import com.sab.adagency.persistence.utility.PersistenceConfig;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class AppUserRepositoryImpl implements AppUserRepository {
+
+    private static final String SQL_FIND_BY_ID = "SELECT * FROM app_users WHERE id=?";
+    private static final String SQL_FIND_BY_USERNAME = "SELECT * FROM app_users WHERE lower(username)=lower(?)";
+    private static final String SQL_FIND_ALL = "SELECT * FROM app_users ORDER BY username";
+    private static final String SQL_INSERT =
+            "INSERT INTO app_users(username, password_hash, role, full_name) VALUES (?,?,?,?)";
+    private static final String SQL_UPDATE =
+            "UPDATE app_users SET username=?, password_hash=?, role=?, full_name=? WHERE id=?";
+    private static final String SQL_DELETE = "DELETE FROM app_users WHERE id=?";
+
+    @Override
+    public Optional<AppUser> findById(int id) {
+        try (Connection con = PersistenceConfig.getConnection();
+                PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_ID)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(map(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Optional<AppUser> findByUsername(String username) {
+        try (Connection con = PersistenceConfig.getConnection();
+                PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_USERNAME)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(map(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<AppUser> findAll() {
+        List<AppUser> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection();
+                PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(map(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public AppUser save(AppUser user) {
+        return user.getId() == 0 ? insert(user) : update(user);
+    }
+
+    @Override
+    public boolean deleteById(int id) {
+        try (Connection con = PersistenceConfig.getConnection();
+                PreparedStatement ps = con.prepareStatement(SQL_DELETE)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private AppUser insert(AppUser user) {
+        try (Connection con = PersistenceConfig.getConnection();
+                PreparedStatement ps = con.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPasswordHash());
+            ps.setString(3, user.getRole().name());
+            ps.setString(4, user.getFullName());
+            ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    return user.toBuilder().id(keys.getInt(1)).build();
+                }
+                throw new RuntimeException("Не отримано згенерований ID користувача");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private AppUser update(AppUser user) {
+        try (Connection con = PersistenceConfig.getConnection();
+                PreparedStatement ps = con.prepareStatement(SQL_UPDATE)) {
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPasswordHash());
+            ps.setString(3, user.getRole().name());
+            ps.setString(4, user.getFullName());
+            ps.setInt(5, user.getId());
+            ps.executeUpdate();
+            return user;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private AppUser map(ResultSet rs) throws SQLException {
+        return AppUser.builder()
+                .id(rs.getInt("id"))
+                .username(rs.getString("username"))
+                .passwordHash(rs.getString("password_hash"))
+                .role(UserRole.valueOf(rs.getString("role")))
+                .fullName(rs.getString("full_name"))
+                .build();
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/implementation/BillboardRepositoryImpl.java
+package com.sab.adagency.persistence.implementation;
+
+import com.sab.adagency.persistence.contract.BillboardRepository;
+import com.sab.adagency.persistence.entity.Billboard;
+import com.sab.adagency.persistence.entity.BillboardSize;
+import com.sab.adagency.persistence.entity.City;
+import com.sab.adagency.persistence.utility.PersistenceConfig;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementation of BillboardRepository using SQLite storage.
+ */
+public class BillboardRepositoryImpl implements BillboardRepository {
+    private static final String SQL_FIND_ONE = "SELECT * FROM billboards WHERE id=?";
+    private static final String SQL_FIND_ALL = "SELECT * FROM billboards";
+    private static final String SQL_INSERT = "INSERT INTO billboards(code, address, city, size, available) VALUES (?,?,?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE billboards SET code=?, address=?, city=?, size=?, available=? WHERE id=?";
+    private static final String SQL_DELETE = "DELETE FROM billboards WHERE id=?";
+    private static final String SQL_FIND_BY_CITY = "SELECT * FROM billboards WHERE city=?";
+    private static final String SQL_FIND_BY_AVAILABLE = "SELECT * FROM billboards WHERE available=?";
+    private static final String SQL_SEARCH = "SELECT * FROM billboards WHERE code LIKE ? OR address LIKE ?";
+
+    @Override
+    public Optional<Billboard> findOneById(int id) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_ONE);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+            return Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Billboard> findAll() {
+        List<Billboard> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public Billboard save(Billboard billboard) {
+        if (billboard.getId() == 0) {
+            return insert(billboard);
+        } else {
+            return update(billboard);
+        }
+    }
+
+    @Override
+    public boolean deleteById(int id) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_DELETE);
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Billboard> findByCity(City city) {
+        List<Billboard> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_CITY);
+            ps.setString(1, city.name());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<Billboard> findByAvailable(boolean available) {
+        List<Billboard> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_AVAILABLE);
+            ps.setBoolean(1, available);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<Billboard> searchByCodeOrAddress(String query) {
+        List<Billboard> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_SEARCH);
+            String q = "%" + query + "%";
+            ps.setString(1, q);
+            ps.setString(2, q);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    private Billboard insert(Billboard billboard) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, billboard.getCode());
+            ps.setString(2, billboard.getAddress());
+            ps.setString(3, billboard.getCity().name());
+            ps.setString(4, billboard.getSize().name());
+            ps.setBoolean(5, billboard.isAvailable());
+            ps.executeUpdate();
+
+            ResultSet generatedKeys = ps.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                return billboard.toBuilder().id(generatedKeys.getInt(1)).build();
+            }
+            throw new RuntimeException("Failed to get generated id");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Billboard update(Billboard billboard) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_UPDATE);
+            ps.setString(1, billboard.getCode());
+            ps.setString(2, billboard.getAddress());
+            ps.setString(3, billboard.getCity().name());
+            ps.setString(4, billboard.getSize().name());
+            ps.setBoolean(5, billboard.isAvailable());
+            ps.setInt(6, billboard.getId());
+            ps.executeUpdate();
+            return billboard;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Billboard mapRow(ResultSet rs) throws SQLException {
+        return Billboard.builder()
+                .id(rs.getInt("id"))
+                .code(rs.getString("code"))
+                .address(rs.getString("address"))
+                .city(City.valueOf(rs.getString("city")))
+                .size(BillboardSize.valueOf(rs.getString("size")))
+                .available(rs.getBoolean("available"))
+                .build();
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/implementation/ClientRepositoryImpl.java
+package com.sab.adagency.persistence.implementation;
+
+import com.sab.adagency.persistence.contract.ClientRepository;
+import com.sab.adagency.persistence.entity.Client;
+import com.sab.adagency.persistence.utility.PersistenceConfig;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementation of ClientRepository using SQLite storage.
+ */
+public class ClientRepositoryImpl implements ClientRepository {
+    private static final String SQL_FIND_ONE = "SELECT * FROM clients WHERE id=?";
+    private static final String SQL_FIND_ALL = "SELECT * FROM clients";
+    private static final String SQL_INSERT = "INSERT INTO clients(name, phone, email, vip) VALUES (?,?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE clients SET name=?, phone=?, email=?, vip=? WHERE id=?";
+    private static final String SQL_DELETE = "DELETE FROM clients WHERE id=?";
+    private static final String SQL_FIND_BY_NAME = "SELECT * FROM clients WHERE name LIKE ?";
+    private static final String SQL_FIND_BY_VIP = "SELECT * FROM clients WHERE vip=?";
+
+    @Override
+    public Optional<Client> findOneById(int id) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_ONE);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+            return Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Client> findAll() {
+        List<Client> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public Client save(Client client) {
+        if (client.getId() == 0) {
+            return insert(client);
+        } else {
+            return update(client);
+        }
+    }
+
+    @Override
+    public boolean deleteById(int id) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_DELETE);
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Client> findByNameContaining(String name) {
+        List<Client> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_NAME);
+            ps.setString(1, "%" + name + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<Client> findByVip(boolean vip) {
+        List<Client> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_VIP);
+            ps.setBoolean(1, vip);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    private Client insert(Client client) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, client.getName());
+            ps.setString(2, client.getPhone());
+            ps.setString(3, client.getEmail());
+            ps.setBoolean(4, client.isVip());
+            ps.executeUpdate();
+
+            ResultSet generatedKeys = ps.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                return client.toBuilder().id(generatedKeys.getInt(1)).build();
+            }
+            throw new RuntimeException("Failed to get generated id");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Client update(Client client) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_UPDATE);
+            ps.setString(1, client.getName());
+            ps.setString(2, client.getPhone());
+            ps.setString(3, client.getEmail());
+            ps.setBoolean(4, client.isVip());
+            ps.setInt(5, client.getId());
+            ps.executeUpdate();
+            return client;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Client mapRow(ResultSet rs) throws SQLException {
+        return Client.builder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .phone(rs.getString("phone"))
+                .email(rs.getString("email"))
+                .vip(rs.getBoolean("vip"))
+                .build();
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/implementation/RentalContractRepositoryImpl.java
+package com.sab.adagency.persistence.implementation;
+
+import com.sab.adagency.persistence.contract.RentalContractRepository;
+import com.sab.adagency.persistence.entity.RentalContract;
+import com.sab.adagency.persistence.utility.PersistenceConfig;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementation of RentalContractRepository using SQLite storage.
+ */
+public class RentalContractRepositoryImpl implements RentalContractRepository {
+    private static final String SQL_FIND_ONE = "SELECT * FROM rental_contracts WHERE id=?";
+    private static final String SQL_FIND_ALL = "SELECT * FROM rental_contracts";
+    private static final String SQL_INSERT = "INSERT INTO rental_contracts(billboard_id, client_id, start_date, end_date, total_price, paid) VALUES (?,?,?,?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE rental_contracts SET billboard_id=?, client_id=?, start_date=?, end_date=?, total_price=?, paid=? WHERE id=?";
+    private static final String SQL_DELETE = "DELETE FROM rental_contracts WHERE id=?";
+    private static final String SQL_FIND_BY_BILLBOARD = "SELECT * FROM rental_contracts WHERE billboard_id=?";
+    private static final String SQL_FIND_BY_CLIENT = "SELECT * FROM rental_contracts WHERE client_id=?";
+    // Two ranges [a,b] and [c,d] overlap iff a <= d AND c <= b
+    private static final String SQL_FIND_OVERLAPPING = "SELECT * FROM rental_contracts "
+            + "WHERE billboard_id=? AND start_date <= ? AND end_date >= ? AND id != ?";
+    private static final String SQL_EXISTS_OVERLAP = "SELECT COUNT(*) FROM rental_contracts "
+            + "WHERE billboard_id=? AND start_date <= ? AND end_date >= ? AND id != ?";
+    private static final String SQL_PAID_REVENUE = "SELECT COALESCE(SUM(total_price), 0) FROM rental_contracts WHERE paid=1";
+
+    @Override
+    public Optional<RentalContract> findOneById(int id) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_ONE);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+            return Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<RentalContract> findAll() {
+        List<RentalContract> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public RentalContract save(RentalContract rentalContract) {
+        if (rentalContract.getId() == 0) {
+            return insert(rentalContract);
+        } else {
+            return update(rentalContract);
+        }
+    }
+
+    @Override
+    public boolean deleteById(int id) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_DELETE);
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<RentalContract> findByBillboardId(int billboardId) {
+        List<RentalContract> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_BILLBOARD);
+            ps.setInt(1, billboardId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<RentalContract> findByClientId(int clientId) {
+        List<RentalContract> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_BY_CLIENT);
+            ps.setInt(1, clientId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<RentalContract> findOverlapping(int billboardId, LocalDate startDate, LocalDate endDate, int excludeId) {
+        List<RentalContract> list = new ArrayList<>();
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_FIND_OVERLAPPING);
+            ps.setInt(1, billboardId);
+            ps.setString(2, endDate.toString());
+            ps.setString(3, startDate.toString());
+            ps.setInt(4, excludeId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public boolean existsOverlap(int billboardId, LocalDate startDate, LocalDate endDate, int excludeId) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_EXISTS_OVERLAP);
+            ps.setInt(1, billboardId);
+            ps.setString(2, endDate.toString());
+            ps.setString(3, startDate.toString());
+            ps.setInt(4, excludeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public double calculatePaidRevenue() {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_PAID_REVENUE);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+            return 0.0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private RentalContract insert(RentalContract contract) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, contract.getBillboardId());
+            ps.setInt(2, contract.getClientId());
+            ps.setString(3, contract.getStartDate().toString());
+            ps.setString(4, contract.getEndDate().toString());
+            ps.setDouble(5, contract.getTotalPrice());
+            ps.setBoolean(6, contract.isPaid());
+            ps.executeUpdate();
+
+            ResultSet generatedKeys = ps.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                return contract.toBuilder().id(generatedKeys.getInt(1)).build();
+            }
+            throw new RuntimeException("Failed to get generated id");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private RentalContract update(RentalContract contract) {
+        try (Connection con = PersistenceConfig.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(SQL_UPDATE);
+            ps.setInt(1, contract.getBillboardId());
+            ps.setInt(2, contract.getClientId());
+            ps.setString(3, contract.getStartDate().toString());
+            ps.setString(4, contract.getEndDate().toString());
+            ps.setDouble(5, contract.getTotalPrice());
+            ps.setBoolean(6, contract.isPaid());
+            ps.setInt(7, contract.getId());
+            ps.executeUpdate();
+            return contract;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private RentalContract mapRow(ResultSet rs) throws SQLException {
+        return RentalContract.builder()
+                .id(rs.getInt("id"))
+                .billboardId(rs.getInt("billboard_id"))
+                .clientId(rs.getInt("client_id"))
+                .startDate(LocalDate.parse(rs.getString("start_date")))
+                .endDate(LocalDate.parse(rs.getString("end_date")))
+                .totalPrice(rs.getDouble("total_price"))
+                .paid(rs.getBoolean("paid"))
+                .build();
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/utility/PasswordUtil.java
+package com.sab.adagency.persistence.utility;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+/** Хешування та перевірка паролів користувачів системи (SHA-256). */
+public final class PasswordUtil {
+
+    private PasswordUtil() {}
+
+    public static String sha256(String raw) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(raw.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(hash.length * 2);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 недоступний", e);
+        }
+    }
+
+    public static boolean matches(String raw, String passwordHash) {
+        return sha256(raw).equals(passwordHash);
+    }
+}
+
+src/main/java/com/sab/adagency/persistence/utility/PersistenceConfig.java
+package com.sab.adagency.persistence.utility;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+/**
+ * Локальна БД SQLite {@code adagency.db}: білборди, клієнти, договори оренди, користувачі.
+ */
+public final class PersistenceConfig {
+
+    private static final HikariDataSource DS;
+
+    static {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:sqlite:" + resolveDbPath());
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        DS = new HikariDataSource(config);
+    }
+
+    private PersistenceConfig() {}
+
+    private static String resolveDbPath() {
+        String[] candidates = {
+            "./resources/adagency.db", "src/main/resources/adagency.db", "./adagency.db"
+        };
+        for (String path : candidates) {
+            File f = new File(path);
+            File parent = f.getParentFile();
+            if (parent != null && parent.exists()) {
+                return path;
+            }
+        }
+        return "./adagency.db";
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return DS.getConnection();
+    }
+
+    public static void initSchema() {
+        try (Connection con = getConnection();
+                Statement st = con.createStatement()) {
+            st.execute("PRAGMA foreign_keys = ON");
+
+            st.execute(
+                    "CREATE TABLE IF NOT EXISTS app_users ("
+                            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            + "username TEXT NOT NULL UNIQUE,"
+                            + "password_hash TEXT NOT NULL,"
+                            + "role TEXT NOT NULL,"
+                            + "full_name TEXT)");
+
+            st.execute(
+                    "CREATE TABLE IF NOT EXISTS billboards ("
+                            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            + "code TEXT NOT NULL UNIQUE,"
+                            + "address TEXT NOT NULL,"
+                            + "city TEXT NOT NULL,"
+                            + "size TEXT NOT NULL,"
+                            + "available INTEGER NOT NULL DEFAULT 1)");
+
+            st.execute(
+                    "CREATE TABLE IF NOT EXISTS clients ("
+                            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            + "name TEXT NOT NULL,"
+                            + "phone TEXT NOT NULL,"
+                            + "email TEXT,"
+                            + "vip INTEGER NOT NULL DEFAULT 0)");
+
+            st.execute(
+                    "CREATE TABLE IF NOT EXISTS rental_contracts ("
+                            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            + "billboard_id INTEGER NOT NULL,"
+                            + "client_id INTEGER NOT NULL,"
+                            + "start_date TEXT NOT NULL,"
+                            + "end_date TEXT NOT NULL,"
+                            + "total_price REAL NOT NULL,"
+                            + "paid INTEGER NOT NULL DEFAULT 0,"
+                            + "FOREIGN KEY(billboard_id) REFERENCES billboards(id),"
+                            + "FOREIGN KEY(client_id) REFERENCES clients(id))");
+
+            st.execute("CREATE INDEX IF NOT EXISTS idx_billboards_city ON billboards(city)");
+            st.execute("CREATE INDEX IF NOT EXISTS idx_contracts_billboard ON rental_contracts(billboard_id)");
+            st.execute("CREATE INDEX IF NOT EXISTS idx_contracts_client ON rental_contracts(client_id)");
+
+            seedIfEmpty(con);
+            seedDefaultAdminIfMissing(con);
+        } catch (SQLException e) {
+            throw new RuntimeException("Не вдалося ініціалізувати базу даних adagency", e);
+        }
+    }
+
+    private static void seedDefaultAdminIfMissing(Connection con) throws SQLException {
+        try (PreparedStatement chk = con.prepareStatement(
+                "SELECT 1 FROM app_users WHERE lower(username)=lower(?)")) {
+            chk.setString(1, "admin");
+            try (var rs = chk.executeQuery()) {
+                if (rs.next()) {
+                    return;
+                }
+            }
+        }
+        try (PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO app_users(username, password_hash, role, full_name) VALUES(?,?,?,?)")) {
+            ps.setString(1, "admin");
+            ps.setString(2, PasswordUtil.sha256("admin123"));
+            ps.setString(3, "ADMIN");
+            ps.setString(4, "Адміністратор системи");
+            ps.executeUpdate();
+        }
+    }
+
+    private static void seedIfEmpty(Connection con) throws SQLException {
+        try (var chk = con.createStatement();
+                var rs = chk.executeQuery("SELECT COUNT(*) FROM billboards")) {
+            if (rs.next() && rs.getInt(1) > 0) {
+                return;
+            }
+        }
+
+        try (Statement st = con.createStatement()) {
+            st.executeUpdate(
+                    "INSERT INTO billboards(code, address, city, size, available) "
+                            + "VALUES ('BB-KY-01', 'вул. Хрещатик, 22', 'KYIV', 'STANDARD_6X3', 1)");
+            st.executeUpdate(
+                    "INSERT INTO billboards(code, address, city, size, available) "
+                            + "VALUES ('BB-LV-02', 'просп. Свободи, 45', 'LVIV', 'LARGE_12X4', 1)");
+            st.executeUpdate(
+                    "INSERT INTO billboards(code, address, city, size, available) "
+                            + "VALUES ('BB-OD-03', 'вул. Дерибасівська, 10', 'ODESA', 'STANDARD_6X3', 0)");
+
+            st.executeUpdate(
+                    "INSERT INTO clients(name, phone, email, vip) "
+                            + "VALUES ('ТОВ «Світло Реклами»', '+380501112233', 'info@svitlo.ua', 1)");
+            st.executeUpdate(
+                    "INSERT INTO clients(name, phone, email, vip) "
+                            + "VALUES ('ПП «Медіа Плюс»', '+380671234567', 'contact@mediaplus.ua', 0)");
+
+            st.executeUpdate(
+                    "INSERT INTO rental_contracts(billboard_id, client_id, start_date, end_date, total_price, paid) "
+                            + "VALUES (3, 1, '2026-05-01', '2026-08-31', 125000.0, 1)");
+            st.executeUpdate(
+                    "INSERT INTO rental_contracts(billboard_id, client_id, start_date, end_date, total_price, paid) "
+                            + "VALUES (1, 2, '2026-06-15', '2026-09-15', 78000.0, 0)");
+        }
+    }
+}
+
+src/main/resources/style/app.css
+/* AdAgency — єдина візуальна ідентичність (синя палітра) */
+
+.root {
+  -fx-font-family: "Montserrat", "Segoe UI", "Arial";
+  -fx-background-color: linear-gradient(to bottom right, #f5f9fc, #e8f0f8);
+}
+
+.app-shell {
+  -fx-background-color: transparent;
+}
+
+.topbar {
+  -fx-padding: 16 26 16 26;
+  -fx-background-color: linear-gradient(
+    to right,
+    #0d2847,
+    #1565c0 55%,
+    #1976d2
+  );
+}
+
+.app-title {
+  -fx-font-size: 28px;
+  -fx-font-weight: 800;
+  -fx-text-fill: #f5f9ff;
+}
+
+.app-subtitle {
+  -fx-font-size: 13px;
+  -fx-text-fill: #c5daf5;
+}
+
+.footer-bar {
+  -fx-padding: 8 16 8 16;
+  -fx-background-color: #e3edf7;
+  -fx-border-color: #c5d8ec;
+  -fx-border-width: 1 0 0 0;
+}
+
+.footer-label {
+  -fx-font-size: 11px;
+  -fx-text-fill: #3d5a73;
+}
+
+.tab-pane .tab-header-area {
+  -fx-padding: 10 14 0 14;
+}
+
+.tab-pane .tab-header-background {
+  -fx-background-color: transparent;
+}
+
+.tab-pane .tab {
+  -fx-background-color: #d4e4f5;
+  -fx-background-radius: 12 12 0 0;
+  -fx-padding: 8 16 8 16;
+}
+
+.tab-pane .tab:selected {
+  -fx-background-color: #ffffff;
+}
+
+.tab-pane .tab-label {
+  -fx-text-fill: #0d47a1;
+  -fx-font-size: 13px;
+  -fx-font-weight: 700;
+}
+
+.tab-pane .tab-content-area {
+  -fx-background-color: transparent;
+}
+
+.home-wrap {
+  -fx-padding: 26;
+  -fx-spacing: 20;
+}
+
+.content-scroll {
+  -fx-background-color: transparent;
+  -fx-background-insets: 0;
+  -fx-padding: 0;
+}
+
+.content-scroll > .viewport {
+  -fx-background-color: transparent;
+}
+
+.hero-card {
+  -fx-padding: 24;
+  -fx-background-radius: 18;
+  -fx-background-color: linear-gradient(to right, #ffffff, #f2f8fd);
+  -fx-border-color: #c5d8ec;
+  -fx-border-radius: 18;
+  -fx-border-width: 1;
+  -fx-effect: dropshadow(gaussian, rgba(13, 40, 71, 0.12), 20, 0.18, 0, 5);
+}
+
+.hero-title {
+  -fx-font-size: 32px;
+  -fx-font-weight: 900;
+  -fx-text-fill: #0d2847;
+}
+
+.hero-text {
+  -fx-font-size: 14px;
+  -fx-text-fill: #3d5a73;
+  -fx-line-spacing: 2px;
+}
+
+.metric-card,
+.feature-card,
+.section-card {
+  -fx-padding: 18;
+  -fx-spacing: 8;
+  -fx-background-radius: 14;
+  -fx-border-radius: 14;
+  -fx-border-width: 1;
+  -fx-background-color: #ffffff;
+  -fx-border-color: #c5d8ec;
+}
+
+.metric-value {
+  -fx-font-size: 22px;
+  -fx-font-weight: 800;
+  -fx-text-fill: #1565c0;
+}
+
+.metric-title {
+  -fx-font-size: 12px;
+  -fx-font-weight: 700;
+  -fx-text-fill: #3d5a73;
+}
+
+.feature-title {
+  -fx-font-size: 17px;
+  -fx-font-weight: 800;
+  -fx-text-fill: #0d2847;
+}
+
+.feature-text {
+  -fx-font-size: 13px;
+  -fx-text-fill: #4a6278;
+}
+
+.page-wrap {
+  -fx-padding: 16;
+}
+
+.section-title {
+  -fx-font-size: 20px;
+  -fx-font-weight: 800;
+  -fx-text-fill: #0d2847;
+}
+
+.section-subtitle {
+  -fx-font-size: 12px;
+  -fx-text-fill: #4a6278;
+}
+
+.toolbar-row {
+  -fx-alignment: center-left;
+  -fx-spacing: 10;
+}
+
+.label-strong {
+  -fx-font-size: 14px;
+  -fx-font-weight: 700;
+  -fx-text-fill: #1a3d66;
+}
+
+.actions-row {
+  -fx-padding: 2 0 0 0;
+}
+
+.table-view {
+  -fx-background-color: #ffffff;
+  -fx-background-radius: 12;
+  -fx-border-color: #c5d8ec;
+  -fx-border-radius: 12;
+  -fx-padding: 2;
+}
+
+.table-view .column-header-background {
+  -fx-background-color: #e8f2fb;
+  -fx-background-radius: 10 10 0 0;
+}
+
+.table-view .column-header,
+.table-view .filler {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent transparent #c5d8ec transparent;
+}
+
+.table-view .column-header .label {
+  -fx-font-size: 12px;
+  -fx-font-weight: 800;
+  -fx-text-fill: #0d47a1;
+}
+
+.table-row-cell {
+  -fx-border-color: transparent;
+  -fx-table-cell-border-color: #e3edf7;
+  -fx-padding: 3 0 3 0;
+}
+
+.table-row-cell:selected {
+  -fx-background-color: #d4e8f7;
+}
+
+.table-cell {
+  -fx-font-size: 12px;
+  -fx-text-fill: #1a3048;
+}
+
+.text-field,
+.password-field,
+.text-area,
+.combo-box,
+.date-picker,
+.spinner {
+  -fx-background-radius: 10;
+  -fx-border-radius: 10;
+  -fx-border-color: #b8cfe5;
+  -fx-background-color: #ffffff;
+  -fx-padding: 6 10 6 10;
+}
+
+.text-field:focused,
+.password-field:focused,
+.text-area:focused,
+.combo-box:focused,
+.date-picker:focused,
+.spinner:focused {
+  -fx-border-color: #1976d2;
+  -fx-effect: dropshadow(gaussian, rgba(25, 118, 210, 0.15), 10, 0.25, 0, 2);
+}
+
+.check-box {
+  -fx-font-size: 12px;
+  -fx-text-fill: #1a3d66;
+}
+
+.button {
+  -fx-cursor: hand;
+  -fx-font-size: 12px;
+  -fx-font-weight: 700;
+  -fx-padding: 8 14 8 14;
+  -fx-background-radius: 10;
+}
+
+.btn-primary {
+  -fx-background-color: linear-gradient(to bottom, #1976d2, #1565c0);
+  -fx-text-fill: #f5f9ff;
+}
+
+.btn-primary:hover {
+  -fx-background-color: linear-gradient(to bottom, #1e88e5, #1976d2);
+}
+
+.btn-accent {
+  -fx-background-color: linear-gradient(to bottom, #42a5f5, #1e88e5);
+  -fx-text-fill: #f5f9ff;
+}
+
+.btn-accent:hover {
+  -fx-background-color: linear-gradient(to bottom, #64b5f6, #42a5f5);
+}
+
+.btn-success {
+  -fx-background-color: linear-gradient(to bottom, #4a7842, #38602f);
+  -fx-text-fill: #f6fff0;
+}
+
+.btn-success:hover {
+  -fx-background-color: linear-gradient(to bottom, #538647, #406a36);
+}
+
+.btn-danger {
+  -fx-background-color: linear-gradient(to bottom, #b03c3c, #8b2d2d);
+  -fx-text-fill: #fff6f6;
+}
+
+.btn-danger:hover {
+  -fx-background-color: linear-gradient(to bottom, #c14545, #9a3434);
+}
+
+.btn-neutral {
+  -fx-background-color: #dce8f4;
+  -fx-text-fill: #1a3d66;
+}
+
+.btn-neutral:hover {
+  -fx-background-color: #c5d8ec;
+}
+
+.total-row {
+  -fx-padding: 10 0 0 0;
+  -fx-alignment: center-left;
+  -fx-spacing: 12;
+}
+
+.total-label {
+  -fx-font-size: 14px;
+  -fx-font-weight: 700;
+  -fx-text-fill: #4a6278;
+}
+
+.total-value {
+  -fx-font-size: 22px;
+  -fx-font-weight: 900;
+  -fx-text-fill: #1565c0;
+}
+
+.separator .line {
+  -fx-border-color: #c5d8ec;
+}
+
+.login-card {
+  -fx-padding: 28;
+  -fx-spacing: 14;
+  -fx-background-radius: 20;
+  -fx-background-color: #ffffff;
+  -fx-border-color: #c5d8ec;
+  -fx-border-radius: 20;
+  -fx-effect: dropshadow(gaussian, rgba(13, 40, 71, 0.18), 25, 0.22, 0, 8);
+  -fx-max-width: 460;
+}
+
+.sidebar {
+  -fx-background-color: linear-gradient(to bottom, #0d2847 0%, #1565c0 60%, #1976d2 100%);
+  -fx-padding: 14 0 14 0;
+  -fx-spacing: 2;
+  -fx-min-width: 240;
+  -fx-pref-width: 240;
+  -fx-effect: dropshadow(gaussian, rgba(13, 40, 71, 0.35), 18, 0.18, 2, 0);
+}
+
+.sidebar-header {
+  -fx-padding: 4 14 14 18;
+  -fx-spacing: 12;
+  -fx-alignment: center-left;
+}
+
+.sidebar-toggle {
+  -fx-background-color: rgba(255, 255, 255, 0.08);
+  -fx-background-radius: 10;
+  -fx-text-fill: #f5f9ff;
+  -fx-font-size: 18px;
+  -fx-font-weight: 800;
+  -fx-padding: 6 12 6 12;
+  -fx-cursor: hand;
+  -fx-min-width: 40;
+}
+
+.sidebar-toggle:hover {
+  -fx-background-color: rgba(255, 255, 255, 0.18);
+}
+
+.sidebar-brand {
+  -fx-font-size: 16px;
+  -fx-font-weight: 900;
+  -fx-text-fill: #f5f9ff;
+}
+
+.menu-section {
+  -fx-padding: 14 18 6 22;
+  -fx-font-size: 10px;
+  -fx-font-weight: 800;
+  -fx-text-fill: rgba(197, 218, 245, 0.75);
+}
+
+.menu-box {
+  -fx-spacing: 2;
+  -fx-padding: 0 8 0 8;
+}
+
+.sidebar-item {
+  -fx-background-color: transparent;
+  -fx-background-radius: 12;
+  -fx-text-fill: #c5daf5;
+  -fx-font-size: 13px;
+  -fx-font-weight: 600;
+  -fx-padding: 11 14 11 14;
+  -fx-alignment: center-left;
+  -fx-graphic-text-gap: 14;
+  -fx-cursor: hand;
+  -fx-content-display: left;
+  -fx-min-width: 0;
+}
+
+.sidebar-item:hover {
+  -fx-background-color: rgba(255, 255, 255, 0.08);
+  -fx-text-fill: #ffffff;
+}
+
+.sidebar-item:selected {
+  -fx-background-color: linear-gradient(to right, rgba(197, 218, 245, 0.22), rgba(197, 218, 245, 0.05));
+  -fx-text-fill: #ffffff;
+  -fx-effect: dropshadow(gaussian, rgba(197, 218, 245, 0.3), 10, 0.18, 0, 0);
+}
+
+.sidebar-item:disabled {
+  -fx-opacity: 0.35;
+  -fx-cursor: default;
+}
+
+.sidebar-icon {
+  -fx-font-size: 17px;
+  -fx-text-fill: #90caf9;
+  -fx-min-width: 22;
+  -fx-alignment: center;
+}
+
+.sidebar.collapsed {
+  -fx-min-width: 76;
+  -fx-pref-width: 76;
+}
+
+.sidebar.collapsed .sidebar-brand,
+.sidebar.collapsed .menu-section {
+  -fx-opacity: 0;
+}
+
+.sidebar.collapsed .sidebar-item {
+  -fx-content-display: graphic-only;
+  -fx-alignment: center;
+  -fx-padding: 12 0 12 0;
+}
+
+.sidebar.collapsed .sidebar-header {
+  -fx-padding: 4 0 14 0;
+  -fx-alignment: center;
+}
+
+.menu-indicator {
+  -fx-background-color: linear-gradient(to bottom, #90caf9, #42a5f5);
+  -fx-background-radius: 0 4 4 0;
+  -fx-pref-width: 4;
+  -fx-pref-height: 38;
+  -fx-effect: dropshadow(gaussian, rgba(144, 202, 249, 0.55), 8, 0.4, 0, 0);
+}
+
+.content-area {
+  -fx-background-color: linear-gradient(to bottom right, #f5f9fc, #e8f0f8);
+}
+
+.menu-host {
+  -fx-padding: 0;
+}
+
+src/main/resources/view/billboard-management.fxml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.BillboardController">
+    <top>
+        <VBox spacing="6.0" styleClass="page-wrap">
+            <children>
+                <Label styleClass="section-title" text="Розподіл білбордів за містами"/>
+                <Label styleClass="section-subtitle" text="Каталог рекламних конструкцій, фільтрація за містом і статусом доступності"/>
+                <Separator/>
+            </children>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.55" orientation="VERTICAL">
+            <items>
+                <VBox spacing="10.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <children>
+                                <Label style="-fx-font-weight: bold;" text="Список білбордів"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <ComboBox fx:id="cityFilterComboBox" promptText="Фільтр за містом"/>
+                                <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefresh"
+                                        text="Оновити"/>
+                            </children>
+                        </HBox>
+                        <TableView fx:id="billboardTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID"/>
+                                <TableColumn fx:id="codeColumn" prefWidth="100.0" text="Код"/>
+                                <TableColumn fx:id="addressColumn" prefWidth="220.0" text="Адреса"/>
+                                <TableColumn fx:id="cityColumn" prefWidth="110.0" text="Місто"/>
+                                <TableColumn fx:id="sizeColumn" prefWidth="180.0" text="Формат"/>
+                                <TableColumn fx:id="availableColumn" prefWidth="110.0" text="Статус"/>
+                            </columns>
+                        </TableView>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                    </padding>
+                </VBox>
+                <VBox spacing="15.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Інформація про білборд"/>
+                        <GridPane hgap="10.0" vgap="10.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="NEVER" minWidth="140.0"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <children>
+                                <Label text="Код:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <TextField fx:id="codeField" promptText="Наприклад, KY-001" GridPane.columnIndex="1"
+                                           GridPane.rowIndex="0"/>
+                                <Label text="Адреса:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <TextField fx:id="addressField" promptText="вул. Хрещатик, 1" GridPane.columnIndex="1"
+                                           GridPane.rowIndex="1"/>
+                                <Label text="Місто:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <ComboBox fx:id="cityComboBox" promptText="Виберіть місто" GridPane.columnIndex="1"
+                                          GridPane.rowIndex="2"/>
+                                <Label text="Формат:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <ComboBox fx:id="sizeComboBox" promptText="Виберіть формат" GridPane.columnIndex="1"
+                                          GridPane.rowIndex="3"/>
+                                <Label text="Доступний:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                <CheckBox fx:id="availableCheckBox" selected="true" text="Білборд доступний для оренди"
+                                          GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            </children>
+                        </GridPane>
+                        <HBox alignment="CENTER" spacing="10.0">
+                            <children>
+                                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#handleSave"
+                                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;"
+                                        text="Додати білборд"/>
+                                <Button fx:id="updateButton" mnemonicParsing="false" onAction="#handleUpdate"
+                                        style="-fx-background-color: #1976D2; -fx-text-fill: white;"
+                                        text="Оновити білборд"/>
+                                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete"
+                                        style="-fx-background-color: #f44336; -fx-text-fill: white;"
+                                        text="Видалити білборд"/>
+                                <Button fx:id="clearButton" mnemonicParsing="false" onAction="#handleClear"
+                                        text="Очистити поля"/>
+                            </children>
+                        </HBox>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                    </padding>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
+
+src/main/resources/view/client-management.fxml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sab.adagency.controller.ClientController">
+   <top>
+      <VBox spacing="6.0" styleClass="page-wrap">
+         <children>
+            <Label styleClass="section-title" text="Управління клієнтами-рекламодавцями" />
+            <Label styleClass="section-subtitle" text="Облік рекламодавців, контактів та VIP-статусу" />
+            <Separator />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <SplitPane dividerPositions="0.58" orientation="VERTICAL">
+         <items>
+            <VBox spacing="10.0">
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <Label style="-fx-font-weight: bold;" text="Список клієнтів" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="searchField" promptText="Пошук за іменем/телефоном" />
+                        <ComboBox fx:id="vipFilterComboBox" promptText="Фільтр за VIP" />
+                        <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefresh" text="Оновити" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="clientTable" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
+                        <TableColumn fx:id="nameColumn" prefWidth="220.0" text="Назва/Ім'я" />
+                        <TableColumn fx:id="phoneColumn" prefWidth="150.0" text="Телефон" />
+                        <TableColumn fx:id="emailColumn" prefWidth="200.0" text="E-mail" />
+                        <TableColumn fx:id="vipColumn" prefWidth="100.0" text="Статус" />
+                     </columns>
+                  </TableView>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            <VBox spacing="15.0">
+               <children>
+                  <Label style="-fx-font-weight: bold;" text="Дані клієнта" />
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="140.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="Назва/Ім'я:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <TextField fx:id="nameField" promptText="Введіть назву компанії або ім'я" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label text="Телефон:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <TextField fx:id="phoneField" promptText="+380..." GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label text="E-mail:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <TextField fx:id="emailField" promptText="email@example.com" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label text="VIP-статус:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <CheckBox fx:id="vipCheckBox" text="Клієнт має VIP-статус (знижка 10%)" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                     </children>
+                  </GridPane>
+                  <HBox alignment="CENTER" spacing="10.0">
+                     <children>
+                        <Button fx:id="saveButton" mnemonicParsing="false" onAction="#handleSave" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Додати клієнта" />
+                        <Button fx:id="updateButton" mnemonicParsing="false" onAction="#handleUpdate" style="-fx-background-color: #1976D2; -fx-text-fill: white;" text="Оновити клієнта" />
+                        <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Видалити клієнта" />
+                        <Button fx:id="clearButton" mnemonicParsing="false" onAction="#handleClear" text="Очистити" />
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+         </items>
+      </SplitPane>
+   </center>
+</BorderPane>
+
+src/main/resources/view/login-view.fxml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane styleClass="app-shell" xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.LoginController">
+   <top>
+      <VBox spacing="2.0" styleClass="topbar">
+         <children>
+            <Label styleClass="app-title" text="AdAgency" />
+            <Label styleClass="app-subtitle" text="Авторизація для доступу до системи управління рекламним агентством" />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <StackPane>
+         <padding>
+            <Insets bottom="30" left="30" right="30" top="30" />
+         </padding>
+         <children>
+            <VBox spacing="14.0" styleClass="login-card">
+               <children>
+                  <Label styleClass="section-title" text="Вхід у AdAgency" />
+                  <Label styleClass="section-subtitle"
+                         text="Введіть облікові дані, щоб продовжити роботу з білбордами, клієнтами та договорами"
+                         wrapText="true" />
+                  <Separator />
+                  <GridPane hgap="10.0" vgap="12.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="100.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="Логін:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <TextField fx:id="usernameField" promptText="Введіть логін"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label text="Пароль:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <PasswordField fx:id="passwordField" promptText="Введіть пароль"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     </children>
+                  </GridPane>
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                     <children>
+                        <Button defaultButton="true" mnemonicParsing="false"
+                                onAction="#handleLogin" styleClass="btn-primary"
+                                text="Увійти" />
+                     </children>
+                  </HBox>
+                  <Label styleClass="app-subtitle"
+                         text="Початковий адміністратор: admin / admin123"
+                         wrapText="true" />
+               </children>
+            </VBox>
+         </children>
+      </StackPane>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER" styleClass="footer-bar">
+         <children>
+            <Label styleClass="footer-label"
+                   text="AdAgency · рекламне агентство · локальна база adagency.db" />
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>
+
+src/main/resources/view/main-view.fxml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane styleClass="app-shell" xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.MainController">
+   <top>
+      <VBox spacing="2.0" styleClass="topbar">
+         <children>
+            <HBox alignment="CENTER_LEFT">
+               <children>
+                  <VBox spacing="4.0">
+                     <children>
+                        <Label styleClass="app-title" text="AdAgency" />
+                        <Label styleClass="app-subtitle"
+                               text="Інформаційна система управління рекламним агентством та орендою білбордів" />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <VBox alignment="CENTER_RIGHT" spacing="2.0">
+                     <children>
+                        <Label fx:id="currentUserLabel" styleClass="app-subtitle" text="Користувач: -" />
+                        <Label fx:id="currentRoleLabel" styleClass="app-subtitle" text="Роль: -" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+   <left>
+      <HBox fx:id="menuHost" styleClass="menu-host">
+         <children>
+            <Pane fx:id="indicatorLayer" prefWidth="4">
+               <children>
+                  <Region fx:id="menuIndicator" styleClass="menu-indicator" visible="false" />
+               </children>
+            </Pane>
+            <VBox fx:id="sidebar" styleClass="sidebar" HBox.hgrow="NEVER">
+               <children>
+                  <HBox styleClass="sidebar-header">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#toggleSidebar"
+                                styleClass="sidebar-toggle" text="≡" />
+                        <Label styleClass="sidebar-brand" text="Меню" />
+                     </children>
+                  </HBox>
+                  <Label styleClass="menu-section" text="ОСНОВНЕ" />
+                  <VBox styleClass="menu-box">
+                     <children>
+                        <ToggleButton fx:id="homeNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showHome" styleClass="sidebar-item" text="Головна">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="🏠" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="billboardNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showBillboards" styleClass="sidebar-item" text="Білборди">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="🏙" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="clientNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showClients" styleClass="sidebar-item" text="Клієнти">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="👥" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="contractNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showContracts" styleClass="sidebar-item" text="Договори">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="📄" />
+                           </graphic>
+                        </ToggleButton>
+                     </children>
+                  </VBox>
+                  <Label styleClass="menu-section" text="АДМІНІСТРУВАННЯ" />
+                  <VBox styleClass="menu-box">
+                     <children>
+                        <ToggleButton fx:id="usersNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showUsers" styleClass="sidebar-item" text="Користувачі">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="👤" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="reportsNav" mnemonicParsing="false" maxWidth="Infinity"
+                                      onAction="#showReports" styleClass="sidebar-item" text="Звітність">
+                           <graphic>
+                              <Label styleClass="sidebar-icon" text="📊" />
+                           </graphic>
+                        </ToggleButton>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </left>
+   <center>
+      <StackPane fx:id="contentArea" styleClass="content-area">
+         <children>
+            <ScrollPane fx:id="homeContent" fitToWidth="true" hbarPolicy="NEVER"
+                        styleClass="content-scroll" vbarPolicy="AS_NEEDED">
+               <content>
+                  <VBox styleClass="home-wrap">
+                     <children>
+                        <VBox styleClass="hero-card" spacing="12.0">
+                           <children>
+                              <Label styleClass="hero-title"
+                                     text="Рекламне агентство — від білбордів до договорів оренди"
+                                     wrapText="true" />
+                              <Label fx:id="welcomeLabel" styleClass="hero-text" wrapText="true" />
+                           </children>
+                        </VBox>
+                        <HBox alignment="CENTER" spacing="14.0">
+                           <children>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="metric-card">
+                                 <children>
+                                    <Label styleClass="metric-value" text="24/7" />
+                                    <Label styleClass="metric-title" text="Доступ до каталогу білбордів" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="metric-card">
+                                 <children>
+                                    <Label styleClass="metric-value" text="6" />
+                                    <Label styleClass="metric-title" text="Модулів керування" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="metric-card">
+                                 <children>
+                                    <Label styleClass="metric-value" text="1" />
+                                    <Label styleClass="metric-title" text="Локальна база adagency.db" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="14.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="feature-card">
+                                 <children>
+                                    <Label styleClass="feature-title" text="Білборди та міста" />
+                                    <Label styleClass="feature-text"
+                                           text="Каталог рекламних конструкцій, фільтрація за містом і контроль доступності для оренди."
+                                           wrapText="true" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="feature-card">
+                                 <children>
+                                    <Label styleClass="feature-title" text="Клієнти та договори" />
+                                    <Label styleClass="feature-text"
+                                           text="Облік рекламодавців, VIP-статус і договори оренди з перевіркою зайнятості дат."
+                                           wrapText="true" />
+                                 </children>
+                              </VBox>
+                              <VBox HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" styleClass="feature-card">
+                                 <children>
+                                    <Label styleClass="feature-title" text="Звітність і експорт" />
+                                    <Label styleClass="feature-text"
+                                           text="Аналітика за містами, дохід і борги по договорах, експорт у CSV для подальшої обробки."
+                                           wrapText="true" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </ScrollPane>
+         </children>
+      </StackPane>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER" styleClass="footer-bar">
+         <children>
+            <Label styleClass="footer-label"
+                   text="AdAgency · Система управління рекламним агентством © 2026" />
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>
+
+src/main/resources/view/rental-contract-management.fxml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sab.adagency.controller.RentalContractController">
+   <top>
+      <VBox spacing="6.0" styleClass="page-wrap">
+         <children>
+            <Label styleClass="section-title" text="Договори оренди білбордів та облік термінів" />
+            <Label styleClass="section-subtitle" text="Оформлення оренди з перевіркою перетину дат на одному білборді" />
+            <Separator />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <SplitPane dividerPositions="0.50" orientation="VERTICAL">
+         <items>
+            <VBox spacing="10.0">
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <Label style="-fx-font-weight: bold;" text="Список договорів" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="billboardFilterComboBox" promptText="Фільтр за білбордом" />
+                        <ComboBox fx:id="paidFilterComboBox" promptText="Фільтр за оплатою" />
+                        <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefresh" text="Оновити" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="contractTable" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
+                        <TableColumn fx:id="billboardColumn" prefWidth="170.0" text="Білборд" />
+                        <TableColumn fx:id="clientColumn" prefWidth="170.0" text="Клієнт" />
+                        <TableColumn fx:id="startDateColumn" prefWidth="100.0" text="Початок" />
+                        <TableColumn fx:id="endDateColumn" prefWidth="100.0" text="Завершення" />
+                        <TableColumn fx:id="daysColumn" prefWidth="80.0" text="Днів" />
+                        <TableColumn fx:id="totalColumn" prefWidth="100.0" text="Сума" />
+                        <TableColumn fx:id="paidColumn" prefWidth="110.0" text="Оплата" />
+                     </columns>
+                  </TableView>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            <VBox spacing="15.0">
+               <children>
+                  <Label style="-fx-font-weight: bold;" text="Деталі договору оренди" />
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="160.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="Білборд:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <ComboBox fx:id="billboardComboBox" promptText="Виберіть білборд" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label text="Клієнт:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <ComboBox fx:id="clientComboBox" promptText="Виберіть клієнта" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label text="Дата початку:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <DatePicker fx:id="startDatePicker" promptText="Виберіть дату початку" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label text="Дата завершення:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <DatePicker fx:id="endDatePicker" promptText="Виберіть дату завершення" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label text="Оплачено:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                        <CheckBox fx:id="paidCheckBox" text="Договір оплачено" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                     </children>
+                  </GridPane>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <Label style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Зайнятість дат:" />
+                        <Label fx:id="availabilityLabel" style="-fx-text-fill: #777;" text="—" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button fx:id="checkAvailabilityButton" mnemonicParsing="false" onAction="#handleCheckAvailability" style="-fx-background-color: #FF9800; -fx-text-fill: white;" text="Перевірити зайнятість дат" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Загальна вартість:" />
+                        <Label fx:id="totalAmountLabel" style="-fx-font-size: 14px; -fx-text-fill: #1565C0;" text="0.00 грн" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" spacing="10.0">
+                     <children>
+                        <Button fx:id="saveButton" mnemonicParsing="false" onAction="#handleSave" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Створити договір" />
+                        <Button fx:id="updateButton" mnemonicParsing="false" onAction="#handleUpdate" style="-fx-background-color: #1976D2; -fx-text-fill: white;" text="Оновити договір" />
+                        <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Видалити договір" />
+                        <Button fx:id="clearButton" mnemonicParsing="false" onAction="#handleClear" text="Очистити" />
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+         </items>
+      </SplitPane>
+   </center>
+</BorderPane>
+
+src/main/resources/view/report-management.fxml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.ReportController">
+   <top>
+      <VBox spacing="6.0" styleClass="page-wrap">
+         <children>
+            <Label styleClass="section-title" text="Аналітична звітність" />
+            <Label styleClass="section-subtitle"
+                   text="Виберіть тип звіту і період для побудови аналітики та експорту у CSV" />
+            <Separator />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <VBox spacing="12.0" styleClass="page-wrap">
+         <children>
+            <HBox styleClass="toolbar-row">
+               <children>
+                  <Label styleClass="label-strong" text="Тип звіту:" />
+                  <ComboBox fx:id="reportTypeCombo" prefWidth="320.0" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Label text="Від:" />
+                  <DatePicker fx:id="startDatePicker" />
+                  <Label text="До:" />
+                  <DatePicker fx:id="endDatePicker" />
+                  <Button mnemonicParsing="false" onAction="#handleGenerate"
+                          styleClass="btn-primary" text="Сформувати" />
+                  <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExportCsv"
+                          styleClass="btn-accent" text="Експорт у CSV" />
+               </children>
+            </HBox>
+            <VBox styleClass="section-card" VBox.vgrow="ALWAYS">
+               <children>
+                  <TableView fx:id="reportTable" VBox.vgrow="ALWAYS" />
+                  <HBox styleClass="total-row">
+                     <children>
+                        <Label styleClass="total-label" text="Підсумок:" />
+                        <Label fx:id="summaryLabel" styleClass="total-value" text="—" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>
+
+src/main/resources/view/user-management.fxml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.UserManagementController">
+   <top>
+      <VBox spacing="6.0" styleClass="page-wrap">
+         <children>
+            <Label styleClass="section-title" text="Користувачі системи" />
+            <Label styleClass="section-subtitle"
+                   text="Створення облікових записів і призначення ролей (доступно адміністратору)" />
+            <Separator />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <SplitPane dividerPositions="0.6" orientation="VERTICAL">
+         <items>
+            <VBox spacing="10.0" styleClass="section-card">
+               <children>
+                  <HBox styleClass="toolbar-row">
+                     <children>
+                        <Label styleClass="label-strong" text="Список користувачів" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" onAction="#handleRefresh"
+                                styleClass="btn-neutral" text="Оновити" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn fx:id="idColumn" prefWidth="60.0" text="ID" />
+                        <TableColumn fx:id="usernameColumn" prefWidth="180.0" text="Логін" />
+                        <TableColumn fx:id="fullNameColumn" prefWidth="220.0" text="ПІБ" />
+                        <TableColumn fx:id="roleColumn" prefWidth="180.0" text="Роль" />
+                     </columns>
+                  </TableView>
+               </children>
+            </VBox>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll" vbarPolicy="AS_NEEDED">
+               <content>
+                  <VBox spacing="15.0" styleClass="section-card">
+                     <children>
+                        <Label styleClass="label-strong" text="Параметри користувача" />
+                        <GridPane hgap="10.0" vgap="10.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="NEVER" minWidth="160.0" />
+                              <ColumnConstraints hgrow="ALWAYS" />
+                           </columnConstraints>
+                           <children>
+                              <Label text="Логін:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                              <TextField fx:id="usernameField" promptText="Введіть логін"
+                                         GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                              <Label text="ПІБ:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                              <TextField fx:id="fullNameField" promptText="Прізвище Ім'я По батькові"
+                                         GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Label text="Пароль:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                              <PasswordField fx:id="passwordField"
+                                             promptText="Залиште порожнім, щоб не змінювати"
+                                             GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Label text="Роль:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                              <ComboBox fx:id="roleComboBox" promptText="Оберіть роль"
+                                        GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                           </children>
+                        </GridPane>
+                        <FlowPane alignment="CENTER" hgap="10.0" styleClass="actions-row" vgap="10.0">
+                           <children>
+                              <Button mnemonicParsing="false" onAction="#handleSave"
+                                      styleClass="btn-primary" text="Створити" />
+                              <Button fx:id="updateButton" mnemonicParsing="false" onAction="#handleUpdate"
+                                      styleClass="btn-accent" text="Оновити" />
+                              <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete"
+                                      styleClass="btn-danger" text="Видалити" />
+                              <Button mnemonicParsing="false" onAction="#handleClear"
+                                      styleClass="btn-neutral" text="Очистити" />
+                           </children>
+                        </FlowPane>
+                     </children>
+                  </VBox>
+               </content>
+            </ScrollPane>
+         </items>
+      </SplitPane>
+   </center>
+</BorderPane>
+

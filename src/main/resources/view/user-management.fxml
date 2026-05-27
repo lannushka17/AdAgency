@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.UserManagementController">
+   <top>
+      <VBox spacing="6.0" styleClass="page-wrap">
+         <children>
+            <Label styleClass="section-title" text="Користувачі системи" />
+            <Label styleClass="section-subtitle"
+                   text="Створення облікових записів і призначення ролей (доступно адміністратору)" />
+            <Separator />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <SplitPane dividerPositions="0.6" orientation="VERTICAL">
+         <items>
+            <VBox spacing="10.0" styleClass="section-card">
+               <children>
+                  <HBox styleClass="toolbar-row">
+                     <children>
+                        <Label styleClass="label-strong" text="Список користувачів" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" onAction="#handleRefresh"
+                                styleClass="btn-neutral" text="Оновити" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn fx:id="idColumn" prefWidth="60.0" text="ID" />
+                        <TableColumn fx:id="usernameColumn" prefWidth="180.0" text="Логін" />
+                        <TableColumn fx:id="fullNameColumn" prefWidth="220.0" text="ПІБ" />
+                        <TableColumn fx:id="roleColumn" prefWidth="180.0" text="Роль" />
+                     </columns>
+                  </TableView>
+               </children>
+            </VBox>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll" vbarPolicy="AS_NEEDED">
+               <content>
+                  <VBox spacing="15.0" styleClass="section-card">
+                     <children>
+                        <Label styleClass="label-strong" text="Параметри користувача" />
+                        <GridPane hgap="10.0" vgap="10.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="NEVER" minWidth="160.0" />
+                              <ColumnConstraints hgrow="ALWAYS" />
+                           </columnConstraints>
+                           <children>
+                              <Label text="Логін:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                              <TextField fx:id="usernameField" promptText="Введіть логін"
+                                         GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                              <Label text="ПІБ:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                              <TextField fx:id="fullNameField" promptText="Прізвище Ім'я По батькові"
+                                         GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Label text="Пароль:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                              <PasswordField fx:id="passwordField"
+                                             promptText="Залиште порожнім, щоб не змінювати"
+                                             GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Label text="Роль:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                              <ComboBox fx:id="roleComboBox" promptText="Оберіть роль"
+                                        GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                           </children>
+                        </GridPane>
+                        <FlowPane alignment="CENTER" hgap="10.0" styleClass="actions-row" vgap="10.0">
+                           <children>
+                              <Button mnemonicParsing="false" onAction="#handleSave"
+                                      styleClass="btn-primary" text="Створити" />
+                              <Button fx:id="updateButton" mnemonicParsing="false" onAction="#handleUpdate"
+                                      styleClass="btn-accent" text="Оновити" />
+                              <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete"
+                                      styleClass="btn-danger" text="Видалити" />
+                              <Button mnemonicParsing="false" onAction="#handleClear"
+                                      styleClass="btn-neutral" text="Очистити" />
+                           </children>
+                        </FlowPane>
+                     </children>
+                  </VBox>
+               </content>
+            </ScrollPane>
+         </items>
+      </SplitPane>
+   </center>
+</BorderPane>

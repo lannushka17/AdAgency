@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.BillboardController">
+    <top>
+        <VBox spacing="6.0" styleClass="page-wrap">
+            <children>
+                <Label styleClass="section-title" text="Розподіл білбордів за містами"/>
+                <Label styleClass="section-subtitle" text="Каталог рекламних конструкцій, фільтрація за містом і статусом доступності"/>
+                <Separator/>
+            </children>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.55" orientation="VERTICAL">
+            <items>
+                <VBox spacing="10.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <children>
+                                <Label style="-fx-font-weight: bold;" text="Список білбордів"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <ComboBox fx:id="cityFilterComboBox" promptText="Фільтр за містом"/>
+                                <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefresh"
+                                        text="Оновити"/>
+                            </children>
+                        </HBox>
+                        <TableView fx:id="billboardTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID"/>
+                                <TableColumn fx:id="codeColumn" prefWidth="100.0" text="Код"/>
+                                <TableColumn fx:id="addressColumn" prefWidth="220.0" text="Адреса"/>
+                                <TableColumn fx:id="cityColumn" prefWidth="110.0" text="Місто"/>
+                                <TableColumn fx:id="sizeColumn" prefWidth="180.0" text="Формат"/>
+                                <TableColumn fx:id="availableColumn" prefWidth="110.0" text="Статус"/>
+                            </columns>
+                        </TableView>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                    </padding>
+                </VBox>
+                <VBox spacing="15.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Інформація про білборд"/>
+                        <GridPane hgap="10.0" vgap="10.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="NEVER" minWidth="140.0"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <children>
+                                <Label text="Код:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <TextField fx:id="codeField" promptText="Наприклад, KY-001" GridPane.columnIndex="1"
+                                           GridPane.rowIndex="0"/>
+                                <Label text="Адреса:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <TextField fx:id="addressField" promptText="вул. Хрещатик, 1" GridPane.columnIndex="1"
+                                           GridPane.rowIndex="1"/>
+                                <Label text="Місто:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <ComboBox fx:id="cityComboBox" promptText="Виберіть місто" GridPane.columnIndex="1"
+                                          GridPane.rowIndex="2"/>
+                                <Label text="Формат:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <ComboBox fx:id="sizeComboBox" promptText="Виберіть формат" GridPane.columnIndex="1"
+                                          GridPane.rowIndex="3"/>
+                                <Label text="Доступний:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                <CheckBox fx:id="availableCheckBox" selected="true" text="Білборд доступний для оренди"
+                                          GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            </children>
+                        </GridPane>
+                        <HBox alignment="CENTER" spacing="10.0">
+                            <children>
+                                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#handleSave"
+                                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;"
+                                        text="Додати білборд"/>
+                                <Button fx:id="updateButton" mnemonicParsing="false" onAction="#handleUpdate"
+                                        style="-fx-background-color: #1976D2; -fx-text-fill: white;"
+                                        text="Оновити білборд"/>
+                                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete"
+                                        style="-fx-background-color: #f44336; -fx-text-fill: white;"
+                                        text="Видалити білборд"/>
+                                <Button fx:id="clearButton" mnemonicParsing="false" onAction="#handleClear"
+                                        text="Очистити поля"/>
+                            </children>
+                        </HBox>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                    </padding>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>

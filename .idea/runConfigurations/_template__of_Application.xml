@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="true" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.sab.adagency.Main" />
+    <module name="AdAgency" />
+    <option name="VM_PARAMETERS" value="--module-path &quot;$PROJECT_DIR$/target/javafx-lib&quot; --add-modules javafx.controls,javafx.fxml" />
+    <method v="2">
+      <option name="Maven.BeforeRunTask" enabled="true" file="$PROJECT_DIR$/pom.xml" goal="process-resources" />
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

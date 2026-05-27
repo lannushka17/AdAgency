@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sab.adagency.controller.ReportController">
+   <top>
+      <VBox spacing="6.0" styleClass="page-wrap">
+         <children>
+            <Label styleClass="section-title" text="Аналітична звітність" />
+            <Label styleClass="section-subtitle"
+                   text="Виберіть тип звіту і період для побудови аналітики та експорту у CSV" />
+            <Separator />
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <VBox spacing="12.0" styleClass="page-wrap">
+         <children>
+            <HBox styleClass="toolbar-row">
+               <children>
+                  <Label styleClass="label-strong" text="Тип звіту:" />
+                  <ComboBox fx:id="reportTypeCombo" prefWidth="320.0" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Label text="Від:" />
+                  <DatePicker fx:id="startDatePicker" />
+                  <Label text="До:" />
+                  <DatePicker fx:id="endDatePicker" />
+                  <Button mnemonicParsing="false" onAction="#handleGenerate"
+                          styleClass="btn-primary" text="Сформувати" />
+                  <Button fx:id="exportButton" mnemonicParsing="false" onAction="#handleExportCsv"
+                          styleClass="btn-accent" text="Експорт у CSV" />
+               </children>
+            </HBox>
+            <VBox styleClass="section-card" VBox.vgrow="ALWAYS">
+               <children>
+                  <TableView fx:id="reportTable" VBox.vgrow="ALWAYS" />
+                  <HBox styleClass="total-row">
+                     <children>
+                        <Label styleClass="total-label" text="Підсумок:" />
+                        <Label fx:id="summaryLabel" styleClass="total-value" text="—" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>
