@@ -16,7 +16,7 @@ jobs:
             installer: deb
           - os: windows-latest
             installer: msi
-          - os: macos-13
+          - os: macos-latest
             installer: dmg
 
     steps:
