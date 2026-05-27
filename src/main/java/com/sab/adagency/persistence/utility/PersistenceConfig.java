@@ -25,13 +25,25 @@ public final class PersistenceConfig {
     private PersistenceConfig() {}
 
     private static String resolveDbPath() {
-        String[] candidates = {
-            "./resources/adagency.db", "src/main/resources/adagency.db", "./adagency.db"
-        };
+        // Primary location for normal app usage (including installers):
+        // <user-home>/.adagency/adagency.db
+        String userHome = System.getProperty("user.home", ".");
+        File appDir = new File(userHome, ".adagency");
+        if (!appDir.exists()) {
+            appDir.mkdirs();
+        }
+        File primary = new File(appDir, "adagency.db");
+        File parent = primary.getParentFile();
+        if (parent != null && (parent.exists() || parent.mkdirs())) {
+            return primary.getAbsolutePath();
+        }
+
+        // Legacy fallback for dev runs from project root.
+        String[] candidates = {"./resources/adagency.db", "src/main/resources/adagency.db", "./adagency.db"};
         for (String path : candidates) {
             File f = new File(path);
-            File parent = f.getParentFile();
-            if (parent != null && parent.exists()) {
+            File p = f.getParentFile();
+            if (p != null && p.exists()) {
                 return path;
             }
         }
