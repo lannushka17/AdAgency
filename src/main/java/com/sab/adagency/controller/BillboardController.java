@@ -1,10 +1,13 @@
 package com.sab.adagency.controller;
 
 import com.sab.adagency.persistence.contract.BillboardRepository;
+import com.sab.adagency.persistence.contract.RentalContractRepository;
 import com.sab.adagency.persistence.entity.Billboard;
 import com.sab.adagency.persistence.entity.BillboardSize;
 import com.sab.adagency.persistence.entity.City;
+import com.sab.adagency.persistence.entity.RentalContract;
 import com.sab.adagency.persistence.implementation.BillboardRepositoryImpl;
+import com.sab.adagency.persistence.implementation.RentalContractRepositoryImpl;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -80,12 +83,14 @@ public class BillboardController implements Initializable {
     private Button clearButton;
 
     private BillboardRepository billboardRepository;
+    private RentalContractRepository rentalContractRepository;
     private ObservableList<Billboard> billboardData;
     private Billboard selectedBillboard;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         billboardRepository = new BillboardRepositoryImpl();
+        rentalContractRepository = new RentalContractRepositoryImpl();
         billboardData = FXCollections.observableArrayList();
 
         setupTableColumns();
@@ -255,6 +260,17 @@ public class BillboardController implements Initializable {
     @FXML
     private void handleDelete() {
         if (selectedBillboard == null) {
+            return;
+        }
+
+        List<RentalContract> linkedContracts = rentalContractRepository.findByBillboardId(selectedBillboard.getId());
+        if (!linkedContracts.isEmpty()) {
+            showAlert(
+                    "Видалення неможливе",
+                    "Білборд «" + selectedBillboard.getCode() + "» задіяний у " + linkedContracts.size()
+                            + " договорі(ах) оренди. Спочатку видаліть або перепризначте ці договори "
+                            + "на вкладці «Договори оренди», а потім повторіть видалення білборда.",
+                    Alert.AlertType.WARNING);
             return;
         }
 

@@ -1,8 +1,11 @@
 package com.sab.adagency.controller;
 
 import com.sab.adagency.persistence.contract.ClientRepository;
+import com.sab.adagency.persistence.contract.RentalContractRepository;
 import com.sab.adagency.persistence.entity.Client;
+import com.sab.adagency.persistence.entity.RentalContract;
 import com.sab.adagency.persistence.implementation.ClientRepositoryImpl;
+import com.sab.adagency.persistence.implementation.RentalContractRepositoryImpl;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -75,12 +78,14 @@ public class ClientController implements Initializable {
     private Button clearButton;
 
     private ClientRepository clientRepository;
+    private RentalContractRepository rentalContractRepository;
     private ObservableList<Client> clientData;
     private Client selectedClient;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         clientRepository = new ClientRepositoryImpl();
+        rentalContractRepository = new RentalContractRepositoryImpl();
         clientData = FXCollections.observableArrayList();
 
         setupTableColumns();
@@ -237,6 +242,17 @@ public class ClientController implements Initializable {
     @FXML
     private void handleDelete() {
         if (selectedClient == null) {
+            return;
+        }
+
+        List<RentalContract> linkedContracts = rentalContractRepository.findByClientId(selectedClient.getId());
+        if (!linkedContracts.isEmpty()) {
+            showAlert(
+                    "Видалення неможливе",
+                    "У клієнта «" + selectedClient.getName() + "» є " + linkedContracts.size()
+                            + " пов'язаний(их) договір(ів) оренди. Спочатку видаліть або перепризначте ці договори "
+                            + "на вкладці «Договори оренди», а потім повторіть видалення клієнта.",
+                    Alert.AlertType.WARNING);
             return;
         }
 
