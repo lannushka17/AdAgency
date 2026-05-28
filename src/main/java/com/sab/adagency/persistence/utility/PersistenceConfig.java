@@ -100,6 +100,11 @@ public final class PersistenceConfig {
             st.execute("CREATE INDEX IF NOT EXISTS idx_contracts_billboard ON rental_contracts(billboard_id)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_contracts_client ON rental_contracts(client_id)");
 
+            // Міграція: у старіших версіях seed заносив неіснуючі коди розмірів,
+            // що ламало BillboardSize.valueOf(...) при завантаженні. Узгоджуємо їх із поточним enum.
+            st.executeUpdate("UPDATE billboards SET size = 'MEDIUM' WHERE size = 'STANDARD_6X3'");
+            st.executeUpdate("UPDATE billboards SET size = 'LARGE'  WHERE size = 'LARGE_12X4'");
+
             seedIfEmpty(con);
             seedDefaultAdminIfMissing(con);
         } catch (SQLException e) {
@@ -138,13 +143,13 @@ public final class PersistenceConfig {
         try (Statement st = con.createStatement()) {
             st.executeUpdate(
                     "INSERT INTO billboards(code, address, city, size, available) "
-                            + "VALUES ('BB-KY-01', 'вул. Хрещатик, 22', 'KYIV', 'STANDARD_6X3', 1)");
+                            + "VALUES ('BB-KY-01', 'вул. Хрещатик, 22', 'KYIV', 'MEDIUM', 1)");
             st.executeUpdate(
                     "INSERT INTO billboards(code, address, city, size, available) "
-                            + "VALUES ('BB-LV-02', 'просп. Свободи, 45', 'LVIV', 'LARGE_12X4', 1)");
+                            + "VALUES ('BB-LV-02', 'просп. Свободи, 45', 'LVIV', 'LARGE', 1)");
             st.executeUpdate(
                     "INSERT INTO billboards(code, address, city, size, available) "
-                            + "VALUES ('BB-OD-03', 'вул. Дерибасівська, 10', 'ODESA', 'STANDARD_6X3', 0)");
+                            + "VALUES ('BB-OD-03', 'вул. Дерибасівська, 10', 'ODESA', 'CITYLIGHT', 0)");
 
             st.executeUpdate(
                     "INSERT INTO clients(name, phone, email, vip) "

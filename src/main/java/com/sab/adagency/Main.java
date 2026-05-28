@@ -56,6 +56,7 @@ public class Main extends Application {
             stage.setMinWidth(1000);
             stage.setMinHeight(660);
             stage.centerOnScreen();
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             throw new RuntimeException("Не вдалося відкрити головне вікно", e);
